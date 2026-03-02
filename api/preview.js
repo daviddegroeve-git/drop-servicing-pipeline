@@ -16,13 +16,16 @@ module.exports = async function handler(request, response) {
             return response.status(404).send('<h1>404 - Preview Not Found</h1><p>This website has not been generated yet or the lead ID is invalid.</p>');
         }
 
-        // Use Publisher agent simply for its modal injection logic
-        const publisher = new PublisherAgent();
-        const injectedHtml = publisher.injectModal(lead.website_html);
+        // Only inject the PayTabs/STC Pay modal if the site has not been paid for and unlocked
+        let finalHtml = lead.website_html;
+        if (lead.status !== 'completed') {
+            const publisher = new PublisherAgent();
+            finalHtml = publisher.injectModal(lead.website_html);
+        }
 
         // Serve raw HTML
         response.setHeader('Content-Type', 'text/html; charset=utf-8');
-        return response.status(200).send(injectedHtml);
+        return response.status(200).send(finalHtml);
 
     } catch (error) {
         console.error('[Preview API Error]', error);
