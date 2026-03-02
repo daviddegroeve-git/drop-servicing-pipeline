@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, Link } from 'react-router-dom';
 import { LayoutDashboard, Users, Activity, Settings, Zap, Globe } from 'lucide-react';
 
 const Layout = () => {
@@ -34,11 +34,13 @@ const Layout = () => {
             {/* Sidebar */}
             <aside className="w-64 bg-surface border-r border-zinc-800 flex flex-col">
                 <div className="p-6 border-b border-zinc-800">
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-primary" />
-                        Drop Servicing
-                    </h1>
-                    <p className="text-xs text-zinc-500 mt-1">SaaS Pipeline Dashboard</p>
+                    <Link to="/" className="flex flex-col gap-1 transition-opacity hover:opacity-80">
+                        <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent flex items-center gap-2">
+                            <Zap className="h-5 w-5 text-primary" />
+                            Drop Servicing
+                        </h1>
+                        <p className="text-xs text-zinc-500 ml-7">SaaS Pipeline Dashboard</p>
+                    </Link>
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2">
