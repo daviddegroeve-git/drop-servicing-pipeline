@@ -1,0 +1,21 @@
+{
+  "name": "drop-servicing-pipeline",
+  "version": "1.0.0",
+  "description": "Automated Drop Servicing SaaS pipeline",
+  "main": "orchestrator.js",
+  "scripts": {
+    "start": "node orchestrator.js",
+    "dev": "node --watch orchestrator.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.43.0",
+    "@supabase/supabase-js": "^2.98.0",
+    "axios": "^1.7.9",
+    "dotenv": "^16.6.1",
+    "mongoose": "^9.2.3",
+    "twilio": "^5.4.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
