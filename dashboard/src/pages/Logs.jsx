@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Terminal } from 'lucide-react';
+import { Terminal, Copy, Check } from 'lucide-react';
 
 export default function Logs() {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         fetchLogs();
@@ -37,22 +38,44 @@ export default function Logs() {
         }
     }
 
-    const getLogColor = (status) => {
-        switch (status) {
-            case 'error': return 'text-red-400';
-            case 'warning': return 'text-amber-400';
-            case 'success': return 'text-emerald-400';
-            default: return 'text-blue-400';
-        }
+
+
+    const handleCopyLogs = () => {
+        if (logs.length === 0) return;
+
+        const logText = logs.map(log => {
+            const time = new Date(log.created_at).toLocaleTimeString();
+            let text = `[${time}] [${log.agent}] ${log.action}`;
+            if (log.place_id) text += ` (Lead: ${log.place_id.slice(-8)})`;
+            if (log.details && Object.keys(log.details).length > 0) {
+                text += ` - ${JSON.stringify(log.details)}`;
+            }
+            return text;
+        }).join('\n');
+
+        navigator.clipboard.writeText(logText).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
     };
 
     return (
         <div className="h-full flex flex-col max-h-[calc(100vh-4rem)]">
-            <header className="mb-6 flex-shrink-0">
-                <h1 className="text-3xl font-bold text-zinc-100 flex items-center gap-2">
-                    <Terminal className="h-7 w-7" /> Live Logs
-                </h1>
-                <p className="text-zinc-400 mt-1">Real-time terminal output from the backend orchestration.</p>
+            <header className="mb-6 flex-shrink-0 flex justify-between items-end">
+                <div>
+                    <h1 className="text-3xl font-bold text-zinc-100 flex items-center gap-2">
+                        <Terminal className="h-7 w-7" /> Live Logs
+                    </h1>
+                    <p className="text-zinc-400 mt-1">Real-time terminal output from the backend orchestration.</p>
+                </div>
+                <button
+                    onClick={handleCopyLogs}
+                    disabled={logs.length === 0}
+                    className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-zinc-200 text-sm font-medium rounded-lg transition-colors border border-zinc-700"
+                >
+                    {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                    {copied ? 'Copied!' : 'Copy Logs'}
+                </button>
             </header>
 
             <div className="flex-1 bg-[#1e1e1e] border border-zinc-800 rounded-2xl overflow-hidden flex flex-col relative font-mono text-sm leading-relaxed shadow-2xl">
@@ -75,7 +98,12 @@ export default function Logs() {
                                 <span className="text-zinc-600 flex-shrink-0 w-24">
                                     {new Date(log.created_at).toLocaleTimeString()}
                                 </span>
-                                <span className={`flex-shrink-0 w-32 font-medium capitalize \${getLogColor(log.status)}`}>
+                                <span className={`flex-shrink-0 w-32 font-medium capitalize \${
+                                    log.status === 'error' ? 'text-red-400' :
+                                    log.status === 'warning' ? 'text-amber-400' :
+                                    log.status === 'success' ? 'text-emerald-400' :
+                                    'text-blue-400'
+                                }`}>
                                     [{log.agent}]
                                 </span>
                                 <span className="text-zinc-300">
