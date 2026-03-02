@@ -7,7 +7,7 @@
     "start": "node orchestrator.js",
     "dev": "node --watch orchestrator.js",
     "build": "cd dashboard && npm install && npm run build",
-    "vercel-build": "npm run build && rm -rf public && cp -r dashboard/dist public"
+    "vercel-build": "VITE_SUPABASE_URL=\"$SUPABASE_URL\" VITE_SUPABASE_ANON_KEY=\"$SUPABASE_ANON_KEY\" npm run build && rm -rf public && cp -r dashboard/dist public"
   },
   "dependencies": {
     "@google/genai": "^1.43.0",
