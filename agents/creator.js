@@ -2,7 +2,7 @@ const { GoogleGenAI } = require('@google/genai');
 
 /**
  * Creator Agent
- * Generates a complete, single-file HTML website for a given business using Gemini 3.1 Pro.
+ * Generates a complete, single-file HTML website for a given business using Gemini 2.5 Pro.
  */
 class CreatorAgent {
     constructor() {
@@ -48,7 +48,7 @@ class CreatorAgent {
 
         try {
             const response = await this.ai.models.generateContent({
-                model: 'gemini-3.1-pro',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
             });
 
