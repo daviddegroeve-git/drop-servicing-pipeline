@@ -5,7 +5,9 @@
   "main": "orchestrator.js",
   "scripts": {
     "start": "node orchestrator.js",
-    "dev": "node --watch orchestrator.js"
+    "dev": "node --watch orchestrator.js",
+    "build": "cd dashboard && npm install && npm run build",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@google/genai": "^1.43.0",
