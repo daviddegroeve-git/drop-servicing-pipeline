@@ -27,7 +27,7 @@ module.exports = async function handler(request, response) {
             }
         }
 
-        // Handle outbound messages (sent from phone manually, or by code pitches)
+        // Handle outbound messages (sent from phone manually, or by code pitches/AI replies)
         if (payload?.event_type === 'message_create' && payload?.data) {
             if (payload.data.type === 'chat') {
                 const outgoingPhone = payload.data.to;
@@ -47,19 +47,33 @@ module.exports = async function handler(request, response) {
 
 async function processIncomingChat(incomingPhone, messageText) {
     const db = new DatabaseService();
+    const chatbot = new ChatbotAgent();
 
-    // Find if this number belongs to a lead
-    const lead = await db.getLeadByPhone(incomingPhone);
-    if (!lead) {
-        console.log(`[Webhook] Unrecognized incoming number ${incomingPhone}. Ignoring message.`);
-        return;
+    // 1. First, always translate for admin review (especially if it's Arabic)
+    let translatedMsg = null;
+    try {
+        const translationPrompt = `Translate the following text to English for admin review. If it's already in English or just an emoji/symbol, just return the exact same text. Do not add any conversational filler, just output the translation:\n\n"${messageText}"`;
+        const translationResponse = await chatbot.ai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: translationPrompt,
+        });
+        translatedMsg = translationResponse.text.trim();
+    } catch (err) {
+        console.error('[Webhook] Translation failed:', err.message);
     }
 
-    console.log(`[Webhook] Message from mapped lead ${lead.name} (${incomingPhone}): ${messageText}`);
+    // 2. Find if this number belongs to a lead
+    const lead = await db.getLeadByPhone(incomingPhone);
+    const placeId = lead ? lead.place_id : null;
 
-    // Call the Chatbot Agent to generate and send a reply
-    const chatbot = new ChatbotAgent();
-    await chatbot.handleMessage(lead, incomingPhone, messageText, db);
+    // 3. Always log the inbound message
+    await db.saveInboundChatLog(placeId, incomingPhone, messageText, translatedMsg);
+    console.log(`[Webhook] Inbound logged from ${incomingPhone} (Lead: ${lead?.name || 'Unknown'})`);
+
+    // 4. Trigger the Chatbot Agent to generate and send a reply ONLY if it's a known lead
+    if (lead) {
+        await chatbot.handleMessage(lead, incomingPhone, messageText, db);
+    }
 }
 
 async function processOutboundChat(outgoingPhone, messageText) {
@@ -67,23 +81,9 @@ async function processOutboundChat(outgoingPhone, messageText) {
 
     // Find if we are sending this to a known lead
     const lead = await db.getLeadByPhone(outgoingPhone);
-    if (!lead) {
-        // Not a lead we track, skip logging
-        return;
-    }
-
-    // Deduplication check: Was this message already logged by the Chatbot or Biller?
-    // The chatbot inserts { message_in: X, message_out: Y } automatically.
-    // If we just sent Y, Ultramsg fires this webhook. We don't want to log Y twice.
-    const latestLog = await db.getLatestChatLog(outgoingPhone);
-
-    if (latestLog && latestLog.message_out && latestLog.message_out.trim() === messageText.trim()) {
-        console.log(`[Webhook] Ignoring duplicate outbound message to ${lead.name} (Already logged by AI)`);
-        return;
-    }
-
-    console.log(`[Webhook] Logging new outbound message to ${lead.name} (${outgoingPhone}): ${messageText.substring(0, 50)}...`);
+    const placeId = lead ? lead.place_id : null;
 
     // Save it as a standalone outbound message (approved so it shows in Inbox)
-    await db.saveOutboundChatLog(lead.place_id, outgoingPhone, messageText);
+    await db.saveOutboundChatLog(placeId, outgoingPhone, messageText);
+    console.log(`[Webhook] Outbound logged to ${outgoingPhone} (Lead: ${lead?.name || 'Unknown'})`);
 }

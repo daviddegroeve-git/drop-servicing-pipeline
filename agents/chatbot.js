@@ -87,8 +87,7 @@ Write the response you will send back exactly as it should appear in WhatsApp. D
                 await closer.api.post('/chat', params);
                 console.log(`[Chatbot] Reply sent to ${incomingPhone}`);
 
-                // Log it to the database for future training
-                await db.saveChatLog(lead.place_id, incomingPhone, messageText, replyText, 'pending', translatedMessage);
+                // Deducting logging here and moving solely to webhook create event to simplify logic
             } else {
                 console.warn('[Chatbot] Closer Agent not configured, cannot send WhatsApp reply.');
             }

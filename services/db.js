@@ -141,11 +141,10 @@ class DatabaseService {
 
         const last7 = cleanPhone.slice(-7);
 
-        // Fetch all pitched or completed leads since we need to strip formatting to match accurately
+        // Fetch all leads since we need to strip formatting to match accurately
         const { data, error } = await this.supabase
             .from('leads')
-            .select('*')
-            .in('status', ['pitched', 'completed']);
+            .select('*');
 
         if (error || !data) {
             console.error('[DB] Error searching for lead by phone:', error ? error.message : 'No data');
@@ -182,6 +181,26 @@ class DatabaseService {
 
         if (error) {
             console.error('[DB] Error saving chat log:', error.message);
+        }
+    }
+
+    /**
+     * Save only an inbound message (used by webhook)
+     */
+    async saveInboundChatLog(placeId, phone, messageIn, translatedMessage = null) {
+        const { error } = await this.supabase
+            .from('chat_logs')
+            .insert({
+                place_id: placeId,
+                phone: phone,
+                message_in: messageIn,
+                message_out: null,
+                status: 'pending',
+                translated_message: translatedMessage
+            });
+
+        if (error) {
+            console.error('[DB] Error saving inbound chat log:', error.message);
         }
     }
 
