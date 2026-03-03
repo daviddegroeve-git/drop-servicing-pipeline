@@ -47,10 +47,12 @@ class CreatorAgent {
       Requirements:
       ${promptConfig.instructions}
       
-      *CRITICAL INSTRUCTION FOR SERVICES/SUBPAGES*: 
+      *CRITICAL INSTRUCTION FOR SERVICES/SUBPAGES & NAVIGATION*: 
       1. DO NOT use placeholders like "Service 1", "Lorem Ipsum", or empty sections.
       2. Analyze the business name, industry, and customer reviews to deduce their exact services.
       3. Fully populate the "Services" or secondary sections with real, compelling, and localized descriptions fitting this specific business in Saudi Arabia. Create comprehensive content.
+      4. Since this is a strict SINGLE-PAGE website, all navigation links in the header/footer MUST use anchor tags (e.g., \`href="#services"\`) that smoothly scroll to corresponding sections on the same page. 
+      5. DO NOT create fake links to external pages like \`services.html\` or \`about.html\`. All content MUST exist and be fully written out on this one single page. Ensure every section linked in the navigation menu actually exists in the HTML body with the correct \`id\` attribute.
       
       *CRITICAL INSTRUCTION FOR VISUALS*:
       1. The website MUST be visually stunning. The Hero section MUST include a large, beautiful background image or a looping background video.
