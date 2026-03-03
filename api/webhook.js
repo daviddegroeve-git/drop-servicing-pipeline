@@ -14,8 +14,7 @@ module.exports = async function handler(request, response) {
         // Ultramsg specific structure
         // {"event_type":"message_received","instanceId":"...","data":{"id":"...","from":"...","to":"...","body":"..."}}
         if (payload?.event_type === 'message_received' && payload?.data) {
-
-            // Only respond to text 'chat' messages (ignore images, audios for now)
+            // Only respond to text 'chat' messages
             if (payload.data.type === 'chat') {
                 const incomingPhone = payload.data.from;
                 const messageText = payload.data.body;
@@ -25,6 +24,17 @@ module.exports = async function handler(request, response) {
                     // Process async to avoid timing out the webhook acknowledgment
                     waitUntil(processIncomingChat(incomingPhone, messageText).catch(console.error));
                 }
+            }
+        }
+
+        // Handle outbound messages (sent from phone manually, or by code pitches)
+        if (payload?.event_type === 'message_create' && payload?.data) {
+            if (payload.data.type === 'chat') {
+                const outgoingPhone = payload.data.to;
+                const messageText = payload.data.body;
+
+                // Process async
+                waitUntil(processOutboundChat(outgoingPhone, messageText).catch(console.error));
             }
         }
 
@@ -41,7 +51,7 @@ async function processIncomingChat(incomingPhone, messageText) {
     // Find if this number belongs to a lead
     const lead = await db.getLeadByPhone(incomingPhone);
     if (!lead) {
-        console.log(`[Webhook] Unrecognized number ${incomingPhone}. Ignoring message.`);
+        console.log(`[Webhook] Unrecognized incoming number ${incomingPhone}. Ignoring message.`);
         return;
     }
 
@@ -50,4 +60,30 @@ async function processIncomingChat(incomingPhone, messageText) {
     // Call the Chatbot Agent to generate and send a reply
     const chatbot = new ChatbotAgent();
     await chatbot.handleMessage(lead, incomingPhone, messageText, db);
+}
+
+async function processOutboundChat(outgoingPhone, messageText) {
+    const db = new DatabaseService();
+
+    // Find if we are sending this to a known lead
+    const lead = await db.getLeadByPhone(outgoingPhone);
+    if (!lead) {
+        // Not a lead we track, skip logging
+        return;
+    }
+
+    // Deduplication check: Was this message already logged by the Chatbot or Biller?
+    // The chatbot inserts { message_in: X, message_out: Y } automatically.
+    // If we just sent Y, Ultramsg fires this webhook. We don't want to log Y twice.
+    const latestLog = await db.getLatestChatLog(outgoingPhone);
+
+    if (latestLog && latestLog.message_out && latestLog.message_out.trim() === messageText.trim()) {
+        console.log(`[Webhook] Ignoring duplicate outbound message to ${lead.name} (Already logged by AI)`);
+        return;
+    }
+
+    console.log(`[Webhook] Logging new outbound message to ${lead.name} (${outgoingPhone}): ${messageText.substring(0, 50)}...`);
+
+    // Save it as a standalone outbound message (approved so it shows in Inbox)
+    await db.saveOutboundChatLog(lead.place_id, outgoingPhone, messageText);
 }

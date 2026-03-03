@@ -203,6 +203,45 @@ class DatabaseService {
     }
 
     /**
+     * Fetch the most recent chat log for a given phone number.
+     * Used for deduplication against webhook events.
+     */
+    async getLatestChatLog(phone) {
+        const { data, error } = await this.supabase
+            .from('chat_logs')
+            .select('*')
+            .eq('phone', phone)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (error && error.code !== 'PGRST116') {
+            console.error('[DB] Error fetching latest chat log:', error.message);
+            return null;
+        }
+        return data || null;
+    }
+
+    /**
+     * Save a unilateral outbound message (e.g. from manual admin typing or webhook)
+     */
+    async saveOutboundChatLog(placeId, phone, messageOut) {
+        const { error } = await this.supabase
+            .from('chat_logs')
+            .insert({
+                place_id: placeId,
+                phone: phone,
+                message_in: null,
+                message_out: messageOut,
+                status: 'approved' // Automatically "approved" so it bypasses AI Answers queue but shows in loop
+            });
+
+        if (error) {
+            console.error('[DB] Error saving outbound chat log:', error.message);
+        }
+    }
+
+    /**
      * Increment a numeric counter column on a lead
      */
     async incrementLeadMetric(placeId, column) {
