@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Almusbah Blend | المصباح بلند</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Noto+Kufi+Arabic:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Marcellus', serif;
+        }
+        [lang="ar"] {
+            font-family: 'Noto Kufi Arabic', sans-serif;
+        }
+        /* Hide elements by default */
+        [data-lang]:not(.active) {
+            display: none;
+        }
+        .hero-bg {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://loremflickr.com/1920/1080/luxury,fashion,boutique,saudi');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .section-bg {
+             background-color: #111827; /* A very dark blue, almost black */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Header -->
+    <header class="bg-gray-900/80 backdrop-blur-md fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <!-- English Title -->
+            <a href="#home" class="text-2xl font-bold text-white active" data-lang="en">Almusbah Blend</a>
+            <!-- Arabic Title -->
+            <a href="#home" class="text-2xl font-bold text-white" data-lang="ar">المصباح بلند</a>
+            
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <!-- English Nav -->
+                <div class="active" data-lang="en">
+                    <a href="#home" class="text-gray-300 hover:text-amber-400 transition">Home</a>
+                    <a href="#about" class="text-gray-300 hover:text-amber-400 transition">About Us</a>
+                    <a href="#collections" class="text-gray-300 hover:text-amber-400 transition">Collections</a>
+                    <a href="#testimonials" class="text-gray-300 hover:text-amber-400 transition">Testimonials</a>
+                    <a href="#contact" class="text-gray-300 hover:text-amber-400 transition">Visit Us</a>
+                </div>
+                <!-- Arabic Nav -->
+                <div class="rtl-nav" data-lang="ar">
+                    <a href="#contact" class="text-gray-300 hover:text-amber-400 transition">زورونا</a>
+                    <a href="#testimonials" class="text-gray-300 hover:text-amber-400 transition">آراء العملاء</a>
+                    <a href="#collections" class="text-gray-300 hover:text-amber-400 transition">مجموعاتنا</a>
+                    <a href="#about" class="text-gray-300 hover:text-amber-400 transition">من نحن</a>
+                    <a href="#home" class="text-gray-300 hover:text-amber-400 transition">الرئيسية</a>
+                </div>
+            </nav>
+
+            <button id="lang-switcher" class="border border-amber-400 text-amber-400 px-3 py-1 rounded-md text-sm hover:bg-amber-400 hover:text-gray-900 transition">
+                العربية
+            </button>
+            
+            <!-- Mobile Menu Button (Optional, not implemented for simplicity in single file) -->
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-bg h-screen flex items-center justify-center text-center">
+        <div class="container mx-auto px-6">
+            <!-- English Content -->
+            <div class="active" data-lang="en">
+                <h1 class="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-4" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">The Art of the Perfect Blend</h1>
+                <p class="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-8">Discover curated collections where timeless Saudi tradition meets contemporary style. Located in the heart of Riyadh at Hayat Mall.</p>
+                <a href="#collections" class="bg-amber-400 text-gray-900 font-bold py-3 px-8 rounded-full text-lg hover:bg-amber-500 transition duration-300 ease-in-out transform hover:scale-105">Explore Our Collections</a>
+            </div>
+            <!-- Arabic Content -->
+            <div dir="rtl" data-lang="ar">
+                <h1 class="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-4" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">فن المزج المثالي</h1>
+                <p class="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-8">اكتشف مجموعات مختارة بعناية حيث يلتقي التراث السعودي الأصيل بالأسلوب المعاصر. في قلب الرياض بالحياة مول.</p>
+                <a href="#collections" class="bg-amber-400 text-gray-900 font-bold py-3 px-8 rounded-full text-lg hover:bg-amber-500 transition duration-300 ease-in-out transform hover:scale-105">اكتشف مجموعاتنا</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="about" class="py-20 section-bg">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-white active" data-lang="en">Our Story of Elegance</h2>
+                <h2 class="text-4xl font-bold text-white" data-lang="ar" dir="rtl">قصتنا في الأناقة</h2>
+                <div class="w-24 h-1 bg-amber-400 mx-auto mt-4"></div>
+            </div>
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2">
+                    <img src="https://loremflickr.com/800/600/fashion,boutique,interior,elegant" alt="Interior of Almusbah Blend boutique" class="rounded-lg shadow-2xl">
+                </div>
+                <div class="md:w-1/2">
+                    <!-- English Content -->
+                    <p class="text-gray-300 leading-relaxed active" data-lang="en">
+                        Founded on a passion for refined style, Almusbah Blend is more than just a clothing store; it's a destination. Located in the prestigious Hayat Mall, we curate unique collections for men and women that honor Saudi heritage while embracing modern trends. Our philosophy is simple: provide exceptional quality, impeccable service, and a 'blend' that is uniquely yours. We believe in the power of a perfectly crafted garment to inspire confidence and express individuality.
+                    </p>
+                    <!-- Arabic Content -->
+                    <p class="text-gray-300 leading-relaxed" data-lang="ar" dir="rtl">
+                        تأسست المصباح بلند بشغف للأناقة الرفيعة، وهي ليست مجرد متجر ملابس، بل وجهة متكاملة. من موقعنا في الحياة مول المرموق، نقدم مجموعات فريدة للرجال والنساء تكرم التراث السعودي وتحتضن في الوقت ذاته الاتجاهات الحديثة. فلسفتنا بسيطة: توفير جودة استثنائية، وخدمة لا تشوبها شائبة، و"بلند" (مزيج) فريد يعبر عنك. نؤمن بقوة الملابس المصممة بإتقان في إلهام الثقة والتعبير عن التفرد.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Collections / Services Section -->
+    <section id="collections" class="py-20 bg-gray-900">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-white active" data-lang="en">Our Signature Collections & Services</h2>
+                <h2 class="text-4xl font-bold text-white" data-lang="ar" dir="rtl">مجموعاتنا وخدماتنا المميزة</h2>
+                <div class="w-24 h-1 bg-amber-400 mx-auto mt-4"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <!-- Service 1: Men's Elegance -->
+                <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300">
+                    <img src="https://loremflickr.com/600/400/saudi,men,thobe,fashion" alt="Stylish Saudi men's fashion" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-white mb-3 active" data-lang="en">Men's Elegance</h3>
+                        <h3 class="text-2xl font-bold text-white mb-3 text-right" data-lang="ar" dir="rtl">أناقة الرجل</h3>
+                        <p class="text-gray-400 leading-relaxed active" data-lang="en">From bespoke Thobes crafted with the finest fabrics to sharp, contemporary casual wear, our men's collection is designed for the modern gentleman. We focus on superior tailoring and a look that commands respect.</p>
+                        <p class="text-gray-400 leading-relaxed text-right" data-lang="ar" dir="rtl">من الثياب المصممة خصيصًا بأجود الأقمشة إلى الملابس الكاجوال العصرية، تم تصميم مجموعتنا الرجالية للرجل العصري. نركز على الخياطة المتقنة والمظهر الذي يفرض الاحترام.</p>
+                    </div>
+                </div>
+                <!-- Service 2: Women's Grace -->
+                <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300">
+                    <img src="https://loremflickr.com/600/400/abaya,fashion,elegant" alt="Elegant abaya fashion" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-white mb-3 active" data-lang="en">Women's Grace</h3>
+                        <h3 class="text-2xl font-bold text-white mb-3 text-right" data-lang="ar" dir="rtl">رقي المرأة</h3>
+                        <p class="text-gray-400 leading-relaxed active" data-lang="en">Discover our exquisite range of Abayas that blend modesty with high fashion. We offer a curated selection of modern dresses and ensembles, each piece chosen for its unique design and quality.</p>
+                        <p class="text-gray-400 leading-relaxed text-right" data-lang="ar" dir="rtl">اكتشفي مجموعتنا الرائعة من العبايات التي تمزج بين الحشمة والموضة الراقية. نقدم تشكيلة مختارة من الفساتين العصرية والأطقم، حيث تم اختيار كل قطعة لتصميمها الفريد وجودتها.</p>
+                    </div>
+                </div>
+                <!-- Service 3: Personal Styling -->
+                <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300">
+                    <img src="https://loremflickr.com/600/400/personal,shopper,fashion,consultation" alt="Personal styling session" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-white mb-3 active" data-lang="en">Personal Styling Service</h3>
+                        <h3 class="text-2xl font-bold text-white mb-3 text-right" data-lang="ar" dir="rtl">خدمة التنسيق الشخصي</h3>
+                        <p class="text-gray-400 leading-relaxed active" data-lang="en">Our experienced team, including specialists like Majd and Nada, is dedicated to providing a personalized shopping experience. We offer expert advice to help you find the perfect outfit that complements your style.</p>
+                        <p class="text-gray-400 leading-relaxed text-right" data-lang="ar" dir="rtl">فريقنا الخبير، بما في ذلك متخصصون مثل مجد وندى، مكرس لتقديم تجربة تسوق شخصية. نقدم نصائح احترافية لمساعدتك في العثور على الزي المثالي الذي يكمل أسلوبك.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-20 section-bg">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-white active" data-lang="en">What Our Clients Say</h2>
+                <h2 class="text-4xl font-bold text-white" data-lang="ar" dir="rtl">ماذا يقول عملاؤنا</h2>
+                <div class="w-24 h-1 bg-amber-400 mx-auto mt-4"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <!-- Testimonial 1 -->
+                <div class="bg-gray-800 p-8 rounded-lg">
+                    <p class="text-gray-300 mb-4 italic">"Great marketing measures and Majd are super helpful. They made me come back and will always visit. Great team."</p>
+                    <p class="text-amber-400 font-bold">- A Valued Customer</p>
+                </div>
+                <!-- Testimonial 2 -->
+                <div class="bg-gray-800 p-8 rounded-lg">
+                    <p class="text-gray-300 mb-4 italic">"I need to thank the special employee she is name Nada, she is amazing and professional ❤️❤️"</p>
+                    <p class="text-amber-400 font-bold">- A Happy Client</p>
+                </div>
+                <!-- Testimonial 3 -->
+                <div class="bg-gray-800 p-8 rounded-lg">
+                    <p class="text-gray-300 mb-4 italic">"Nice, happy to visit the shop."</p>
+                    <p class="text-amber-400 font-bold">- A Regular Visitor</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact & Location Section -->
+    <section id="contact" class="py-20 bg-gray-900 text-center">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-white active" data-lang="en">Visit Us at Hayat Mall</h2>
+                <h2 class="text-4xl font-bold text-white" data-lang="ar" dir="rtl">زورونا في الحياة مول</h2>
+                <div class="w-24 h-1 bg-amber-400 mx-auto mt-4"></div>
+            </div>
+            <div class="max-w-4xl mx-auto">
+                <p class="text-lg text-gray-300 mb-8 active" data-lang="en">
+                    We invite you to experience Almusbah Blend in person. Discover our latest collections and enjoy our personalized service.
+                </p>
+                <p class="text-lg text-gray-300 mb-8" data-lang="ar" dir="rtl">
+                    ندعوكم لتجربة المصباح بلند شخصيًا. اكتشفوا أحدث مجموعاتنا واستمتعوا بخدمتنا الشخصية.
+                </p>
+                <div class="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16">
+                    <div class="text-left md:text-right" dir="ltr">
+                        <h3 class="text-xl font-semibold text-amber-400 mb-2 active" data-lang="en">Address</h3>
+                        <h3 class="text-xl font-semibold text-amber-400 mb-2 text-right" data-lang="ar" dir="rtl">العنوان</h3>
+                        <p class="text-gray-400">King Abdulaziz Rd, Al King Fahd, Riyadh 12272, Saudi Arabia</p>
+                         <p class="text-gray-400 text-right" dir="rtl">طريق الملك عبدالعزيز، الملك فهد، الرياض 12272</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-amber-400 mb-2 active" data-lang="en">Contact</h3>
+                        <h3 class="text-xl font-semibold text-amber-400 mb-2" data-lang="ar" dir="rtl">للتواصل</h3>
+                        <p class="text-gray-400">Phone: <a href="tel:0590110780" class="hover:text-amber-400">059 011 0780</a></p>
+                    </div>
+                </div>
+                 <div class="mt-12 rounded-lg overflow-hidden shadow-2xl">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3622.759132512613!2d46.66698661500108!3d24.76938928409695!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e2f1d53f86e3981%3A0x6b738e4a9e96f86b!2sAlmusbah%20Blend!5e0!3m2!1sen!2sus!4v1672856109351!5m2!1sen!2sus" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="section-bg border-t border-gray-800">
+        <div class="container mx-auto px-6 py-8 text-center text-gray-400">
+            <!-- English Title -->
+            <h3 class="text-2xl font-bold text-white mb-4 active" data-lang="en">Almusbah Blend</h3>
+            <!-- Arabic Title -->
+            <h3 class="text-2xl font-bold text-white mb-4" data-lang="ar">المصباح بلند</h3>
+
+            <div class="flex justify-center space-x-6 mb-6">
+                <!-- English Nav -->
+                <div class="active flex justify-center space-x-6" data-lang="en">
+                    <a href="#home" class="hover:text-amber-400 transition">Home</a>
+                    <a href="#about" class="hover:text-amber-400 transition">About</a>
+                    <a href="#collections" class="hover:text-amber-400 transition">Collections</a>
+                    <a href="#contact" class="hover:text-amber-400 transition">Contact</a>
+                </div>
+                <!-- Arabic Nav -->
+                <div class="flex justify-center space-x-6" data-lang="ar">
+                    <a href="#contact" class="hover:text-amber-400 transition">اتصل بنا</a>
+                    <a href="#collections" class="hover:text-amber-400 transition">مجموعاتنا</a>
+                    <a href="#about" class="hover:text-amber-400 transition">من نحن</a>
+                    <a href="#home" class="hover:text-amber-400 transition">الرئيسية</a>
+                </div>
+            </div>
+            
+            <p>&copy; <span id="year"></span> Almusbah Blend. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        const langSwitcher = document.getElementById('lang-switcher');
+        const htmlEl = document.documentElement;
+
+        function setLanguage(lang) {
+            htmlEl.lang = lang;
+            htmlEl.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                if (el.getAttribute('data-lang') === lang) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+
+            langSwitcher.textContent = lang === 'ar' ? 'English' : 'العربية';
+            
+            // Re-arrange arabic nav items on language switch.
+            const rtlNav = document.querySelector('.rtl-nav');
+            if (lang === 'ar' && rtlNav) {
+                const links = Array.from(rtlNav.children);
+                links.reverse().forEach(link => rtlNav.appendChild(link));
+            }
+        }
+
+        langSwitcher.addEventListener('click', () => {
+            const currentLang = htmlEl.lang;
+            const newLang = currentLang === 'en' ? 'ar' : 'en';
+            setLanguage(newLang);
+        });
+
+        // Set initial language
+        setLanguage('en');
+
+    </script>
+</body>
+</html>

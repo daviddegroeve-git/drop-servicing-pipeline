@@ -56,9 +56,14 @@ class CreatorAgent {
       
       *CRITICAL INSTRUCTION FOR VISUALS*:
       1. The website MUST be visually stunning. The Hero section MUST include a large, beautiful background image or a looping background video.
-      2. Strongly use relevant placeholder images for the Hero and Service sections. You can use services like \`https://loremflickr.com/1920/1080/\${keyword}\`.
-      3. CRITICAL: DO NOT REPEAT PHOTOS. Every single image or background MUST be different. To achieve this, you MUST append a unique random number parameter to every single image URL (e.g., \`https://loremflickr.com/1920/1080/food?random=1\`, \`...food?random=2\`) or use completely distinct keywords.
-      4. Do not just leave blank colored boxes. Use rich imagery throughout the design to make it feel premium.
+      2. Strongly use relevant placeholder images for the Hero and Service sections using \`https://loremflickr.com/w/h/keyword?random=X\`.
+      3. CRITICAL: loremflickr returns identical fallback images (cats) if the keywords are too complex! You MUST use simple, 1-word generic keywords (e.g., \`fashion\`, \`business\`, \`food\`, \`cars\`). DO NOT use complex words like "saudi", "thobe", "abaya".
+      4. CRITICAL: DO NOT REPEAT PHOTOS. You MUST append a unique random number parameter to every single image URL using the exact same generic keyword (e.g., \`https://loremflickr.com/1920/1080/fashion?random=1\`, \`https://loremflickr.com/600/400/fashion?random=2\`, \`https://loremflickr.com/600/400/fashion?random=3\`). 
+      5. Do not just leave blank colored boxes. Use rich imagery throughout the design to make it feel premium.
+      
+      *CRITICAL INSTRUCTION FOR BILINGUAL SUPPORT*:
+      1. DO NOT write complex custom Javascript to rearrange navigation nodes or toggle individual element's \`.active\` classes. That takes up too many tokens and truncates the generation.
+      2. Keep it simple: use CSS logic. Example: Hide \`[data-lang="ar"]\` when \`html[lang="en"]\` is active, and vice versa using CSS. The Javascript switcher button should literally just toggle \`document.documentElement.lang\`.
       
       Output ONLY the raw HTML string. No markdown formatting like \`\`\`html at the top or bottom. Just the pure HTML source code starting with <!DOCTYPE html>.
     `;
