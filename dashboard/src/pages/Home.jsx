@@ -2,26 +2,26 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import { Users, Globe2, CheckCircle, Clock, Map as MapIcon, MessageCircle, MessageSquare, Activity, ChevronRight, Languages } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion as M } from 'framer-motion';
 import { APIProvider, Map as GoogleMap, AdvancedMarker } from '@vis.gl/react-google-maps';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY || '';
 
 const StatCard = ({ title, value, icon: Icon, color, delay }) => (
-    <motion.div
+    <M.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay, duration: 0.4 }}
         className="bg-surface p-6 rounded-2xl border border-zinc-800 flex items-center gap-4 hover:border-zinc-700 transition-colors shadow-lg"
     >
-        <div className={`p - 4 rounded - xl ${color} bg - opacity - 10`}>
-            <Icon className={`h - 6 w - 6 ${color.replace('bg-', 'text-')} `} />
+        <div className={`p-4 rounded-xl ${color} bg-opacity-10`}>
+            <Icon className={`h-6 w-6 ${color.replace('bg-', 'text-')}`} />
         </div>
         <div>
             <p className="text-sm text-zinc-400 font-medium">{title}</p>
             <h3 className="text-2xl font-bold text-zinc-100 mt-1">{value}</h3>
         </div>
-    </motion.div>
+    </M.div>
 );
 
 export default function Home() {
@@ -57,6 +57,7 @@ export default function Home() {
             supabase.removeChannel(chatSub);
             supabase.removeChannel(logsSub);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     async function fetchAllData() {
@@ -182,7 +183,7 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Main Col: Pipeline Activity */}
-                <motion.div
+                <M.div
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
                     className="lg:col-span-2 bg-surface p-6 rounded-2xl border border-zinc-800 shadow-xl flex flex-col"
                 >
@@ -219,7 +220,7 @@ export default function Home() {
                                             )}
                                         </td>
                                         <td className="px-4 py-3">
-                                            <span className={`px - 2.5 py - 1 rounded - md text - xs font - medium border ${getStatusColor(lead.status)} `}>
+                                            <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${getStatusColor(lead.status)}`}>
                                                 {lead.status}
                                             </span>
                                         </td>
@@ -232,10 +233,10 @@ export default function Home() {
                         </table>
                         {recentLeads.length === 0 && <div className="text-center text-zinc-500 py-6">No leads found in pipeline.</div>}
                     </div>
-                </motion.div>
+                </M.div>
 
                 {/* Right Col Top: Mini Map */}
-                <motion.div
+                <M.div
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
                     className="bg-surface rounded-2xl border border-zinc-800 shadow-xl flex flex-col overflow-hidden relative min-h-[300px]"
                 >
@@ -271,10 +272,10 @@ export default function Home() {
                             Google Maps API Key required for preview.
                         </div>
                     )}
-                </motion.div>
+                </M.div>
 
                 {/* Bottom Row Col 1: WhatsApp Snippets */}
-                <motion.div
+                <M.div
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
                     className="bg-surface p-6 rounded-2xl border border-zinc-800 shadow-xl flex flex-col"
                 >
@@ -304,24 +305,24 @@ export default function Home() {
                                             {chat.message_in || chat.message_out}
                                         </span>
                                         {chat.message_in && chat.translated_message && chat.translated_message !== chat.message_in && (
-                                            <Languages className="w-3 h-3 text-zinc-600 shrink-0" title={`Translation: ${chat.translated_message} `} />
+                                            <Languages className="w-3 h-3 text-zinc-600 shrink-0" title={`Translation: ${chat.translated_message}`} />
                                         )}
                                     </p>
                                 </div>
                             ))
                         )}
                     </div>
-                </motion.div>
+                </M.div>
 
                 {/* Bottom Row Col 2: AI Training Alert */}
-                <motion.div
+                <M.div
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
                     className="bg-surface p-6 rounded-2xl border border-zinc-800 shadow-xl flex flex-col justify-between relative overflow-hidden group"
                 >
-                    <div className={`absolute inset - 0 opacity - 10 transition - opacity group - hover: opacity - 20 ${pendingAnswers > 0 ? 'bg-amber-500' : 'bg-zinc-500'} `} />
+                    <div className={`absolute inset-0 opacity-10 transition-opacity group-hover:opacity-20 ${pendingAnswers > 0 ? 'bg-amber-500' : 'bg-zinc-500'}`} />
 
                     <div className="relative z-10 flex justify-between items-start">
-                        <div className={`w - 12 h - 12 rounded - xl flex items - center justify - center ${pendingAnswers > 0 ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'} `}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${pendingAnswers > 0 ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}`}>
                             <MessageSquare className="w-6 h-6" />
                         </div>
                         <Link to="/answers" className="bg-zinc-900 border border-zinc-700 hover:border-zinc-500 px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-300 transition-colors">
@@ -342,10 +343,10 @@ export default function Home() {
                             Approve or correct the AI's autonomous responses so it learns your style.
                         </p>
                     </div>
-                </motion.div>
+                </M.div>
 
                 {/* Bottom Row Col 3: System Health / Logs */}
-                <motion.div
+                <M.div
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
                     className="bg-surface p-6 rounded-2xl border border-zinc-800 shadow-xl flex flex-col"
                 >
@@ -366,7 +367,7 @@ export default function Home() {
                             recentLogs.map(log => (
                                 <div key={log.id} className="flex gap-2 text-zinc-400 items-start">
                                     <span className="text-zinc-600 shrink-0">[{new Date(log.created_at).toLocaleTimeString([], { hour12: false })}]</span>
-                                    <span className={`px - 1.5 rounded shrink - 0 ${log.status === 'error' ? 'bg-red-500/20 text-red-400' : log.status === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'} `}>
+                                    <span className={`px-1.5 rounded shrink-0 ${log.status === 'error' ? 'bg-red-500/20 text-red-400' : log.status === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'}`}>
                                         {log.agent}
                                     </span>
                                     <span className="truncate">{log.action}</span>
@@ -374,7 +375,7 @@ export default function Home() {
                             ))
                         )}
                     </div>
-                </motion.div>
+                </M.div>
 
             </div>
         </div>

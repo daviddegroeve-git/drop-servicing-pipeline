@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { MessageCircle, Search, User, ChevronRight, Hash, Globe2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as M, AnimatePresence } from 'framer-motion';
 
 const TranslationTooltip = ({ text }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +18,7 @@ const TranslationTooltip = ({ text }) => {
             </button>
             <AnimatePresence>
                 {isOpen && text && (
-                    <motion.div
+                    <M.div
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 5 }}
@@ -29,7 +29,7 @@ const TranslationTooltip = ({ text }) => {
                         <p className="whitespace-pre-wrap">{text}</p>
                         {/* Little triangle arrow pointing down */}
                         <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-zinc-800"></div>
-                    </motion.div>
+                    </M.div>
                 )}
             </AnimatePresence>
         </div>
@@ -149,7 +149,7 @@ export default function WhatsApp() {
     };
 
     // Helper to render alternating message bubbles from a single db row
-    const renderMessageLog = (log, index) => {
+    const renderMessageLog = (log) => {
         const bubbles = [];
 
         // 1. If there's an outbound message (sent by us/AI)

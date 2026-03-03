@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { MessageSquare, CheckCircle, Edit3, Save, Globe2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as M, AnimatePresence } from 'framer-motion';
 
 const TranslationTooltip = ({ text }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +18,7 @@ const TranslationTooltip = ({ text }) => {
             </button>
             <AnimatePresence>
                 {isOpen && text && (
-                    <motion.div
+                    <M.div
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 5 }}
@@ -28,7 +28,7 @@ const TranslationTooltip = ({ text }) => {
                         <p className="font-semibold text-indigo-400 mb-1 border-b border-zinc-700/50 pb-1">Translation</p>
                         <p className="whitespace-pre-wrap">{text}</p>
                         <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-zinc-800"></div>
-                    </motion.div>
+                    </M.div>
                 )}
             </AnimatePresence>
         </div>
