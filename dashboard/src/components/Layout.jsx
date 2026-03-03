@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, Activity, Settings, Zap, Globe, Map as MapIcon } from 'lucide-react';
+import { LayoutDashboard, Users, Activity, Settings, Zap, Globe, Map as MapIcon, MessageSquare } from 'lucide-react';
 
 const Layout = () => {
     const navItems = [
         { to: '/', icon: LayoutDashboard, label: 'Overview' },
         { to: '/pipeline', icon: Users, label: 'Pipeline' },
         { to: '/map', icon: MapIcon, label: 'Map' },
+        { to: '/answers', icon: MessageSquare, label: 'Answers' },
         { to: '/websites', icon: Globe, label: 'Live Sites' },
         { to: '/logs', icon: Activity, label: 'Live Logs' },
         { to: '/settings', icon: Settings, label: 'Settings' },

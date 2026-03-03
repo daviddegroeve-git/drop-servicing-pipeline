@@ -126,6 +126,78 @@ class DatabaseService {
             // Optionally throw or just fail silently to not block the pipeline
         }
     }
+
+    /**
+     * Find a lead using an Ultramsg formatted phone number (e.g. 966501234567@c.us)
+     */
+    async getLeadByPhone(ultramsgPhone) {
+        // purely keep digits
+        const cleanPhone = ultramsgPhone.replace(/\D/g, '');
+        // Take the last 7 digits to match against the varied Google Places formats (+966 50 123 4567, 050 123 4567, etc.)
+        if (cleanPhone.length < 7) return null;
+
+        const last7 = cleanPhone.slice(-7);
+
+        // We only care about pitched or completed leads since they are the ones receiving messages
+        const { data, error } = await this.supabase
+            .from('leads')
+            .select('*')
+            .in('status', ['pitched', 'completed'])
+            .ilike('phone', `%${last7}%`);
+
+        if (error) {
+            console.error('[DB] Error searching for lead by phone:', error.message);
+            return null;
+        }
+
+        // Secondary filter in memory to ensure it really matches avoiding basic collisions
+        for (const lead of data) {
+            const dbCleanPhone = lead.phone.replace(/\D/g, '');
+            if (cleanPhone.includes(dbCleanPhone) || dbCleanPhone.includes(cleanPhone)) {
+                return lead;
+            }
+        }
+
+        // Fallback for safety
+        return data.length > 0 ? data[0] : null;
+    }
+
+    /**
+     * Save an inbound chat interaction
+     */
+    async saveChatLog(placeId, phone, messageIn, messageOut, status = 'pending') {
+        const { error } = await this.supabase
+            .from('chat_logs')
+            .insert({
+                place_id: placeId,
+                phone: phone,
+                message_in: messageIn,
+                message_out: messageOut,
+                status: status
+            });
+
+        if (error) {
+            console.error('[DB] Error saving chat log:', error.message);
+        }
+    }
+
+    /**
+     * Get approved or corrected logs to train the AI
+     */
+    async getTrainingLogs() {
+        const { data, error } = await this.supabase
+            .from('chat_logs')
+            .select('*')
+            .in('status', ['approved', 'corrected'])
+            .order('created_at', { ascending: false })
+            .limit(30);
+
+        if (error) {
+            console.error('[DB] Error fetching training logs:', error.message);
+            return [];
+        }
+        return data;
+    }
 }
 
 module.exports = DatabaseService;
