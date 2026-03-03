@@ -102,7 +102,7 @@ class PublisherAgent {
         setTimeout(() => {
           document.body.classList.add('modal-open');
           document.getElementById('publisher-modal-overlay').classList.add('show');
-        }, 5000);
+        }, 60000);
       </script>
     `;
 
