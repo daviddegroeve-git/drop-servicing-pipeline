@@ -168,7 +168,7 @@ class DatabaseService {
     /**
      * Save an inbound chat interaction
      */
-    async saveChatLog(placeId, phone, messageIn, messageOut, status = 'pending') {
+    async saveChatLog(placeId, phone, messageIn, messageOut, status = 'pending', translatedMessage = null) {
         const { error } = await this.supabase
             .from('chat_logs')
             .insert({
@@ -176,7 +176,8 @@ class DatabaseService {
                 phone: phone,
                 message_in: messageIn,
                 message_out: messageOut,
-                status: status
+                status: status,
+                translated_message: translatedMessage
             });
 
         if (error) {

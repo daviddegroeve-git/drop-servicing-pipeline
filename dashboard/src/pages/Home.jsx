@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
-import { Users, Globe2, CheckCircle, Clock, Map as MapIcon, MessageCircle, MessageSquare, Activity, ChevronRight } from 'lucide-react';
+import { Users, Globe2, CheckCircle, Clock, Map as MapIcon, MessageCircle, MessageSquare, Activity, ChevronRight, Languages } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { APIProvider, Map as GoogleMap, AdvancedMarker } from '@vis.gl/react-google-maps';
 
@@ -14,8 +14,8 @@ const StatCard = ({ title, value, icon: Icon, color, delay }) => (
         transition={{ delay, duration: 0.4 }}
         className="bg-surface p-6 rounded-2xl border border-zinc-800 flex items-center gap-4 hover:border-zinc-700 transition-colors shadow-lg"
     >
-        <div className={`p-4 rounded-xl ${color} bg-opacity-10`}>
-            <Icon className={`h-6 w-6 ${color.replace('bg-', 'text-')}`} />
+        <div className={`p - 4 rounded - xl ${color} bg - opacity - 10`}>
+            <Icon className={`h - 6 w - 6 ${color.replace('bg-', 'text-')} `} />
         </div>
         <div>
             <p className="text-sm text-zinc-400 font-medium">{title}</p>
@@ -102,7 +102,7 @@ export default function Home() {
         try {
             const { data, error } = await supabase
                 .from('chat_logs')
-                .select('id, phone, message_in, message_out, created_at, leads(name)')
+                .select('id, phone, message_in, message_out, translated_message, created_at, leads(name)')
                 .order('created_at', { ascending: false })
                 .limit(4);
             if (!error) setRecentChats(data || []);
@@ -219,7 +219,7 @@ export default function Home() {
                                             )}
                                         </td>
                                         <td className="px-4 py-3">
-                                            <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${getStatusColor(lead.status)}`}>
+                                            <span className={`px - 2.5 py - 1 rounded - md text - xs font - medium border ${getStatusColor(lead.status)} `}>
                                                 {lead.status}
                                             </span>
                                         </td>
@@ -294,13 +294,18 @@ export default function Home() {
                                         <span className="text-xs font-bold text-zinc-300 truncate">{chat.leads?.name || chat.phone.replace('@c.us', '')}</span>
                                         <span className="text-[10px] text-zinc-500">{new Date(chat.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
-                                    <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
+                                    <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed flex items-center gap-1.5 overflow-hidden">
                                         {chat.message_in ? (
-                                            <span className="text-zinc-500 mr-1">Inbox:</span>
+                                            <span className="text-zinc-500 mr-1 shrink-0">Inbox:</span>
                                         ) : (
-                                            <span className="text-emerald-500/80 mr-1">Out:</span>
+                                            <span className="text-emerald-500/80 mr-1 shrink-0">Out:</span>
                                         )}
-                                        {chat.message_in || chat.message_out}
+                                        <span className="truncate flex-1">
+                                            {chat.message_in || chat.message_out}
+                                        </span>
+                                        {chat.message_in && chat.translated_message && chat.translated_message !== chat.message_in && (
+                                            <Languages className="w-3 h-3 text-zinc-600 shrink-0" title={`Translation: ${chat.translated_message} `} />
+                                        )}
                                     </p>
                                 </div>
                             ))
@@ -313,10 +318,10 @@ export default function Home() {
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
                     className="bg-surface p-6 rounded-2xl border border-zinc-800 shadow-xl flex flex-col justify-between relative overflow-hidden group"
                 >
-                    <div className={`absolute inset-0 opacity-10 transition-opacity group-hover:opacity-20 ${pendingAnswers > 0 ? 'bg-amber-500' : 'bg-zinc-500'}`} />
+                    <div className={`absolute inset - 0 opacity - 10 transition - opacity group - hover: opacity - 20 ${pendingAnswers > 0 ? 'bg-amber-500' : 'bg-zinc-500'} `} />
 
                     <div className="relative z-10 flex justify-between items-start">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${pendingAnswers > 0 ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}`}>
+                        <div className={`w - 12 h - 12 rounded - xl flex items - center justify - center ${pendingAnswers > 0 ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'} `}>
                             <MessageSquare className="w-6 h-6" />
                         </div>
                         <Link to="/answers" className="bg-zinc-900 border border-zinc-700 hover:border-zinc-500 px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-300 transition-colors">
@@ -361,7 +366,7 @@ export default function Home() {
                             recentLogs.map(log => (
                                 <div key={log.id} className="flex gap-2 text-zinc-400 items-start">
                                     <span className="text-zinc-600 shrink-0">[{new Date(log.created_at).toLocaleTimeString([], { hour12: false })}]</span>
-                                    <span className={`px-1.5 rounded shrink-0 ${log.status === 'error' ? 'bg-red-500/20 text-red-400' : log.status === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                                    <span className={`px - 1.5 rounded shrink - 0 ${log.status === 'error' ? 'bg-red-500/20 text-red-400' : log.status === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'} `}>
                                         {log.agent}
                                     </span>
                                     <span className="truncate">{log.action}</span>

@@ -59,13 +59,21 @@ User's New Message to you:
 Write the response you will send back exactly as it should appear in WhatsApp. Do not include quotes or meta-commentary.
             `;
 
-            const response = await this.ai.models.generateContent({
-                model: 'gemini-2.5-pro',
-                contents: prompt,
-            });
+            const [response, translationResponse] = await Promise.all([
+                this.ai.models.generateContent({
+                    model: 'gemini-2.5-pro',
+                    contents: prompt,
+                }),
+                this.ai.models.generateContent({
+                    model: 'gemini-2.5-flash',
+                    contents: `Translate the following text to English for admin review. If it's already in English or just an emoji/symbol, just return the exact same text. Do not add any conversational filler, just output the translation:\n\n"${messageText}"`,
+                })
+            ]);
 
             const replyText = response.text.trim();
+            const translatedMessage = translationResponse.text.trim();
             console.log(`[Chatbot] AI generated reply: ${replyText}`);
+            console.log(`[Chatbot] Translated incoming: ${translatedMessage}`);
 
             // Send via CloserAgent (it contains the Ultramsg logic)
             const closer = new CloserAgent();
@@ -80,7 +88,7 @@ Write the response you will send back exactly as it should appear in WhatsApp. D
                 console.log(`[Chatbot] Reply sent to ${incomingPhone}`);
 
                 // Log it to the database for future training
-                await db.saveChatLog(lead.place_id, incomingPhone, messageText, replyText, 'pending');
+                await db.saveChatLog(lead.place_id, incomingPhone, messageText, replyText, 'pending', translatedMessage);
             } else {
                 console.warn('[Chatbot] Closer Agent not configured, cannot send WhatsApp reply.');
             }

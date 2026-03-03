@@ -1,7 +1,40 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { MessageCircle, Search, User, Clock, ChevronRight, Hash } from 'lucide-react';
+import { MessageCircle, Search, User, ChevronRight, Hash, Globe2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const TranslationTooltip = ({ text }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="relative inline-block ml-2">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                onMouseEnter={() => setIsOpen(true)}
+                onMouseLeave={() => setIsOpen(false)}
+                className="text-zinc-500 hover:text-emerald-400 focus:outline-none transition-colors align-middle"
+                title="View English Translation"
+            >
+                <Globe2 className="w-4 h-4" />
+            </button>
+            <AnimatePresence>
+                {isOpen && text && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-zinc-800 text-zinc-200 text-xs p-3 rounded-lg border border-zinc-700 shadow-xl z-50 text-left pointer-events-none"
+                    >
+                        <p className="font-semibold text-emerald-400 mb-1 border-b border-zinc-700/50 pb-1">Translation</p>
+                        <p className="whitespace-pre-wrap">{text}</p>
+                        {/* Little triangle arrow pointing down */}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-zinc-800"></div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
 
 export default function WhatsApp() {
     const [threads, setThreads] = useState([]);
@@ -46,6 +79,7 @@ export default function WhatsApp() {
                     phone, 
                     message_in, 
                     message_out, 
+                    translated_message,
                     created_at,
                     leads ( name )
                 `)
@@ -136,8 +170,13 @@ export default function WhatsApp() {
         if (log.message_in) {
             bubbles.push(
                 <div key={`in-${log.id}`} className="flex justify-start mb-4">
-                    <div className="bg-zinc-800 text-zinc-200 border border-zinc-700/50 px-4 py-2.5 rounded-2xl rounded-tl-sm max-w-[75%] shadow-sm">
-                        <p className="whitespace-pre-wrap text-[15px]">{log.message_in}</p>
+                    <div className="bg-zinc-800 text-zinc-200 border border-zinc-700/50 px-4 py-2.5 rounded-2xl rounded-tl-sm max-w-[75%] shadow-sm relative">
+                        <div className="flex items-start gap-1">
+                            <p className="whitespace-pre-wrap text-[15px]">{log.message_in}</p>
+                            {log.translated_message && log.translated_message !== log.message_in && (
+                                <TranslationTooltip text={log.translated_message} />
+                            )}
+                        </div>
                         <div className="text-right mt-1">
                             <span className="text-[11px] text-zinc-500">{formatTime(log.created_at)}</span>
                         </div>
@@ -248,9 +287,9 @@ export default function WhatsApp() {
                                             </div>
                                         </div>
 
-                                        {messages.map((log, i) => (
+                                        {messages.map((log) => (
                                             <div key={log.id}>
-                                                {renderMessageLog(log, i)}
+                                                {renderMessageLog(log)}
                                             </div>
                                         ))}
                                         <div ref={messagesEndRef} />

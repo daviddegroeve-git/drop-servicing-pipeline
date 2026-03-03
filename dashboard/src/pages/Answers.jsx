@@ -1,6 +1,39 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { MessageSquare, CheckCircle, Edit3, X, Save } from 'lucide-react';
+import { MessageSquare, CheckCircle, Edit3, Save, Globe2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const TranslationTooltip = ({ text }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="relative inline-block ml-2">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                onMouseEnter={() => setIsOpen(true)}
+                onMouseLeave={() => setIsOpen(false)}
+                className="text-zinc-500 hover:text-indigo-400 focus:outline-none transition-colors align-middle"
+                title="View English Translation"
+            >
+                <Globe2 className="w-4 h-4" />
+            </button>
+            <AnimatePresence>
+                {isOpen && text && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-zinc-800 text-zinc-200 text-xs p-3 rounded-lg border border-zinc-700 shadow-xl z-50 text-left pointer-events-none"
+                    >
+                        <p className="font-semibold text-indigo-400 mb-1 border-b border-zinc-700/50 pb-1">Translation</p>
+                        <p className="whitespace-pre-wrap">{text}</p>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-zinc-800"></div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
 
 export default function Answers() {
     const [logs, setLogs] = useState([]);
@@ -29,6 +62,7 @@ export default function Answers() {
                     id, 
                     message_in, 
                     message_out, 
+                    translated_message,
                     status, 
                     created_at, 
                     phone,
@@ -128,7 +162,12 @@ export default function Answers() {
                                 <div className="flex items-start gap-3">
                                     <div className="bg-zinc-800 pt-2 pb-3 px-4 rounded-2xl rounded-tl-sm text-zinc-300 max-w-[80%] border border-zinc-700/50">
                                         <p className="text-xs text-zinc-500 mb-1 font-medium">Lead asked:</p>
-                                        <p className="whitespace-pre-wrap">{log.message_in}</p>
+                                        <div className="flex items-start gap-1">
+                                            <p className="whitespace-pre-wrap">{log.message_in}</p>
+                                            {log.translated_message && log.translated_message !== log.message_in && (
+                                                <TranslationTooltip text={log.translated_message} />
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
