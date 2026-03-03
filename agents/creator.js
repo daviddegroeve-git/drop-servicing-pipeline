@@ -41,6 +41,9 @@ class CreatorAgent {
       - Address: ${business.address}
       - Industry/Types: ${(business.types || []).join(', ')}
       
+      Real Business Photos (USE THESE EXACT URLS IN YOUR IMG SRC ATTRIBUTES OR BACKGROUND URLS):
+      ${(business.photos && business.photos.length > 0) ? business.photos.map(p => `- ${p}`).join('\n      ') : 'No real photos available.'}
+      
       Real Customer Reviews (Incorporate these into a Testimonials section to build trust):
       ${(business.reviews && business.reviews.length > 0) ? business.reviews.map(r => `"${r}"`).join('\n      ') : 'No recent reviews available.'}
       
@@ -56,9 +59,9 @@ class CreatorAgent {
       
       *CRITICAL INSTRUCTION FOR VISUALS*:
       1. The website MUST be visually stunning. The Hero section MUST include a large, beautiful background image or a looping background video.
-      2. Strongly use relevant placeholder images for the Hero and Service sections using \`https://loremflickr.com/w/h/keyword?random=X\`.
-      3. CRITICAL: loremflickr returns identical fallback images (cats) if the keywords are too complex! You MUST use simple, 1-word generic keywords (e.g., \`fashion\`, \`business\`, \`food\`, \`cars\`). DO NOT use complex words like "saudi", "thobe", "abaya".
-      4. CRITICAL: DO NOT REPEAT PHOTOS. You MUST append a unique random number parameter to every single image URL using the exact same generic keyword (e.g., \`https://loremflickr.com/1920/1080/fashion?random=1\`, \`https://loremflickr.com/600/400/fashion?random=2\`, \`https://loremflickr.com/600/400/fashion?random=3\`). 
+      2. CRITICAL: You MUST use the "Real Business Photos" URLs provided above for the images on the site. DO NOT use generic placeholders unless no real photos are available. These photos are already fully-qualified URLs and are ready to be used inside your \`<img src="...">\` tags or CSS \`url(...)\`.
+      3. Distribute the real business photos throughout the Hero and Service sections to make the website feel authentic and built specifically for them. 
+      4. If real photos run out or are missing, you may use \`https://loremflickr.com/w/h/keyword?random=X\` as a fallback. If using the fallback, use simple 1-word generic keywords and append a unique random number to prevent duplicate cats from appearing.
       5. Do not just leave blank colored boxes. Use rich imagery throughout the design to make it feel premium.
       
       *CRITICAL INSTRUCTION FOR BILINGUAL SUPPORT*:

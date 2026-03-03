@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, Activity, Settings, Zap, Globe, Map as MapIcon, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Users, Activity, Settings, Zap, Globe, Map as MapIcon, MessageSquare, BarChart3, MessageCircle } from 'lucide-react';
 
 const Layout = () => {
     const navItems = [
@@ -8,6 +8,8 @@ const Layout = () => {
         { to: '/pipeline', icon: Users, label: 'Pipeline' },
         { to: '/map', icon: MapIcon, label: 'Map' },
         { to: '/answers', icon: MessageSquare, label: 'Answers' },
+        { to: '/whatsapp', icon: MessageCircle, label: 'WhatsApp Inbox' },
+        { to: '/analytics', icon: BarChart3, label: 'Analytics' },
         { to: '/websites', icon: Globe, label: 'Live Sites' },
         { to: '/logs', icon: Activity, label: 'Live Logs' },
         { to: '/settings', icon: Settings, label: 'Settings' },

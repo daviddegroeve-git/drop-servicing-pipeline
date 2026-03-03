@@ -3,6 +3,7 @@ require('dotenv').config();
 const CreatorAgent = require('./agents/creator');
 const PublisherAgent = require('./agents/publisher');
 const CloserAgent = require('./agents/closer');
+const BillerAgent = require('./agents/biller');
 const DatabaseService = require('./services/db');
 
 const ScoutAgent = require('./agents/scout');
@@ -13,6 +14,7 @@ class Orchestrator {
     this.creator = new CreatorAgent();
     this.publisher = new PublisherAgent();
     this.closer = new CloserAgent();
+    this.biller = new BillerAgent();
     this.db = new DatabaseService();
   }
 
@@ -39,6 +41,9 @@ class Orchestrator {
     await this.db.addLog('orchestrator', 'cycle_start', null, { query }, 'info');
 
     try {
+      // Step 0: Check Subscriptions and send out reminders
+      await this.biller.checkSubscriptions();
+
       // Step 1: Scout
       console.log(`[Orchestrator] Scouting for leads matching "${query}"`);
       await this.db.addLog('scout', 'search_started', null, { query }, 'info');

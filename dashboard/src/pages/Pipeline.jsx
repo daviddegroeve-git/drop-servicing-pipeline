@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { ExternalLink, Phone, MapPin, Eye, CheckCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ExternalLink, Phone, MapPin, Eye, CheckCircle, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Pipeline() {
     const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [verificationModal, setVerificationModal] = useState({ isOpen: false, leadId: null, leadName: '', date: '', tier: 'monthly' });
 
     useEffect(() => {
         fetchLeads();
@@ -47,17 +48,25 @@ export default function Pipeline() {
         return colors[status] || 'bg-zinc-800 text-zinc-400 border-zinc-700';
     };
 
-    const handleUnlock = async (id) => {
-        if (!confirm('Have you verified the STC Pay transfer on your phone?')) return;
+    const handleUnlock = async () => {
+        if (!verificationModal.date) {
+            alert('Please select the payment date before verifying.');
+            return;
+        }
 
         try {
             const res = await fetch('/api/unlock', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
+                body: JSON.stringify({
+                    id: verificationModal.leadId,
+                    payment_date: verificationModal.date,
+                    tier: verificationModal.tier
+                })
             });
             if (!res.ok) throw new Error('Failed to unlock site');
-            alert('Site successfully unlocked!');
+            alert('Site successfully unlocked and subscription started!');
+            setVerificationModal({ isOpen: false, leadId: null, leadName: '', date: '', tier: 'monthly' });
             fetchLeads(); // Refresh to show completed status
         } catch (error) {
             console.error(error);
@@ -113,7 +122,7 @@ export default function Pipeline() {
                                             </div>
                                         </td>
                                         <td className="p-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border \${getStatusColor(lead.status)}`}>
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(lead.status)}`}>
                                                 {lead.status.toUpperCase()}
                                             </span>
                                         </td>
@@ -121,7 +130,13 @@ export default function Pipeline() {
                                             <div className="flex items-center justify-end gap-2">
                                                 {lead.status === 'pitched' && (
                                                     <button
-                                                        onClick={() => handleUnlock(lead.place_id)}
+                                                        onClick={() => setVerificationModal({
+                                                            isOpen: true,
+                                                            leadId: lead.place_id,
+                                                            leadName: lead.name,
+                                                            date: new Date().toISOString().split('T')[0],
+                                                            tier: 'monthly'
+                                                        })}
                                                         className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-sm font-medium rounded-lg transition-colors"
                                                     >
                                                         <CheckCircle className="h-4 w-4" /> Verify Payment
@@ -148,6 +163,75 @@ export default function Pipeline() {
                     </div>
                 )}
             </div>
+
+            {/* Verification Modal with Date Picker */}
+            <AnimatePresence>
+                {verificationModal.isOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl w-full max-w-md p-6"
+                        >
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold text-white">Verify Payment</h3>
+                                <button onClick={() => setVerificationModal({ isOpen: false, leadId: null, leadName: '', date: '', tier: 'monthly' })} className="text-zinc-500 hover:text-white transition-colors">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <p className="text-zinc-300 mb-6 font-medium">
+                                Confirming payment for: <span className="text-emerald-400">{verificationModal.leadName}</span>
+                            </p>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-zinc-400 mb-1">When was this payment made?</label>
+                                    <p className="text-xs text-zinc-500 mb-2">This date will start the 30-day subscription clock and trigger the renewal reminders.</p>
+                                    <input
+                                        type="date"
+                                        value={verificationModal.date}
+                                        onChange={(e) => setVerificationModal({ ...verificationModal, date: e.target.value })}
+                                        className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                    />
+                                </div>
+                                <div className="mt-4">
+                                    <label className="block text-sm font-medium text-zinc-400 mb-1">Subscription Tier</label>
+                                    <p className="text-xs text-zinc-500 mb-2">Select whether this client paid for Monthly or Yearly.</p>
+                                    <select
+                                        value={verificationModal.tier}
+                                        onChange={(e) => setVerificationModal({ ...verificationModal, tier: e.target.value })}
+                                        className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 appearance-none"
+                                    >
+                                        <option value="monthly">Monthly Subscription (99 SAR / 30 Days)</option>
+                                        <option value="yearly">Yearly Subscription (990 SAR / 365 Days)</option>
+                                    </select>
+                                </div>
+                                <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-lg mt-4 text-emerald-300 flex items-start gap-3 text-sm">
+                                    <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                                    <div>Verifying changes this lead to `completed`, unlocks their website, and enables automatic WhatsApp billing reminders.</div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 justify-end mt-8">
+                                <button
+                                    onClick={() => setVerificationModal({ isOpen: false, leadId: null, leadName: '', date: '', tier: 'monthly' })}
+                                    className="px-4 py-2 text-zinc-400 hover:text-white transition-colors font-medium border border-transparent"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleUnlock}
+                                    className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 outline outline-transparent hover:outline-emerald-500/30 text-emerald-950 font-bold rounded-lg transition-all"
+                                >
+                                    Confirm & Unlock Site
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

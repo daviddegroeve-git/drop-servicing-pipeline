@@ -7,6 +7,8 @@ import Settings from './pages/Settings';
 import Logs from './pages/Logs';
 import MapView from './pages/Map';
 import Answers from './pages/Answers';
+import Analytics from './pages/Analytics';
+import WhatsApp from './pages/WhatsApp';
 
 function App() {
   return (
@@ -18,7 +20,9 @@ function App() {
           <Route path="websites" element={<Websites />} />
           <Route path="map" element={<MapView />} />
           <Route path="answers" element={<Answers />} />
+          <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="whatsapp" element={<WhatsApp />} />
           <Route path="logs" element={<Logs />} />
         </Route>
       </Routes>

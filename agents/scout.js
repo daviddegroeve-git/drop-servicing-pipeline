@@ -36,8 +36,8 @@ class ScoutAgent {
 
       // Step 2: Get details for each place to check phone number and website
       for (const place of places) {
-        // Request detailed fields including reviews and business types to enhance AI generation
-        const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_phone_number,website,reviews,types&key=${this.apiKey}`;
+        // Request detailed fields including reviews, business types, and photos to enhance AI generation
+        const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_phone_number,website,reviews,types,photos&key=${this.apiKey}`;
         const detailsResponse = await axios.get(detailsUrl);
 
         if (detailsResponse.data.status === 'OK') {
@@ -52,6 +52,11 @@ class ScoutAgent {
               ? details.reviews.filter(r => r.rating >= 4).slice(0, 3).map(r => r.text)
               : [];
 
+            // Extract up to 5 photos from Google Maps to use instead of placeholder images
+            const photos = details.photos
+              ? details.photos.slice(0, 5).map(p => `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${p.photo_reference}&key=${this.apiKey}`)
+              : [];
+
             validLeads.push({
               placeId: place.place_id,
               name: details.name,
@@ -59,7 +64,8 @@ class ScoutAgent {
               address: place.formatted_address,
               location: place.geometry?.location,
               types: details.types || [],
-              reviews: topReviews
+              reviews: topReviews,
+              photos: photos
             });
           }
         }

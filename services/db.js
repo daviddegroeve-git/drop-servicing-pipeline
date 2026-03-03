@@ -26,6 +26,7 @@ class DatabaseService {
                 address: lead.address,
                 lat: lead.location?.lat || null,
                 lng: lead.location?.lng || null,
+                photos: lead.photos || [],
                 updated_at: new Date().toISOString()
             }, { onConflict: 'place_id' })
             .select();
@@ -140,28 +141,28 @@ class DatabaseService {
 
         const last7 = cleanPhone.slice(-7);
 
-        // We only care about pitched or completed leads since they are the ones receiving messages
+        // Fetch all pitched or completed leads since we need to strip formatting to match accurately
         const { data, error } = await this.supabase
             .from('leads')
             .select('*')
-            .in('status', ['pitched', 'completed'])
-            .ilike('phone', `%${last7}%`);
+            .in('status', ['pitched', 'completed']);
 
-        if (error) {
-            console.error('[DB] Error searching for lead by phone:', error.message);
+        if (error || !data) {
+            console.error('[DB] Error searching for lead by phone:', error ? error.message : 'No data');
             return null;
         }
 
-        // Secondary filter in memory to ensure it really matches avoiding basic collisions
+        // Filter in memory to bypass formatting like spaces, hyphens, or parentheses in the DB string
         for (const lead of data) {
-            const dbCleanPhone = lead.phone.replace(/\D/g, '');
-            if (cleanPhone.includes(dbCleanPhone) || dbCleanPhone.includes(cleanPhone)) {
-                return lead;
+            if (lead.phone) {
+                const dbCleanPhone = lead.phone.replace(/\D/g, '');
+                if (dbCleanPhone.includes(last7) || cleanPhone.includes(dbCleanPhone)) {
+                    return lead;
+                }
             }
         }
 
-        // Fallback for safety
-        return data.length > 0 ? data[0] : null;
+        return null;
     }
 
     /**
