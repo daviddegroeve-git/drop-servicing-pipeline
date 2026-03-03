@@ -52,6 +52,11 @@ class CreatorAgent {
       2. Analyze the business name, industry, and customer reviews to deduce their exact services.
       3. Fully populate the "Services" or secondary sections with real, compelling, and localized descriptions fitting this specific business in Saudi Arabia. Create comprehensive content.
       
+      *CRITICAL INSTRUCTION FOR VISUALS*:
+      1. The website MUST be visually stunning. The Hero section MUST include a large, beautiful background image or a looping background video.
+      2. Strongly use relevant placeholder images for the Hero and Service sections. You can use services like \`https://loremflickr.com/1920/1080/\${keyword}\` (e.g., if it's a restaurant, use \`https://loremflickr.com/1920/1080/restaurant,food\`).
+      3. Do not just leave blank colored boxes. Use rich imagery throughout the design to make it feel premium.
+      
       Output ONLY the raw HTML string. No markdown formatting like \`\`\`html at the top or bottom. Just the pure HTML source code starting with <!DOCTYPE html>.
     `;
 
