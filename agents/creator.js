@@ -39,9 +39,18 @@ class CreatorAgent {
       - Name: ${business.name}
       - Phone: ${business.phone}
       - Address: ${business.address}
+      - Industry/Types: ${(business.types || []).join(', ')}
+      
+      Real Customer Reviews (Incorporate these into a Testimonials section to build trust):
+      ${(business.reviews && business.reviews.length > 0) ? business.reviews.map(r => `"${r}"`).join('\n      ') : 'No recent reviews available.'}
       
       Requirements:
       ${promptConfig.instructions}
+      
+      *CRITICAL INSTRUCTION FOR SERVICES/SUBPAGES*: 
+      1. DO NOT use placeholders like "Service 1", "Lorem Ipsum", or empty sections.
+      2. Analyze the business name, industry, and customer reviews to deduce their exact services.
+      3. Fully populate the "Services" or secondary sections with real, compelling, and localized descriptions fitting this specific business in Saudi Arabia. Create comprehensive content.
       
       Output ONLY the raw HTML string. No markdown formatting like \`\`\`html at the top or bottom. Just the pure HTML source code starting with <!DOCTYPE html>.
     `;
