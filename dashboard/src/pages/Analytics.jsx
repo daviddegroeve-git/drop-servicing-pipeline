@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Activity, CheckCircle, XCircle, RefreshCcw, BarChart3 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion as M } from 'framer-motion';
 
 const MetricCard = ({ title, value, icon: Icon, color, delay, subtitle }) => (
-    <motion.div
+    <M.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay, duration: 0.4 }}
@@ -18,7 +18,7 @@ const MetricCard = ({ title, value, icon: Icon, color, delay, subtitle }) => (
             <h3 className="text-3xl font-bold text-zinc-100 mt-1">{value}</h3>
             {subtitle && <p className="text-xs text-zinc-500 mt-2">{subtitle}</p>}
         </div>
-    </motion.div>
+    </M.div>
 );
 
 export default function Analytics() {
@@ -92,7 +92,7 @@ export default function Analytics() {
             </header>
 
             {metrics.map((agent, index) => (
-                <motion.div
+                <M.div
                     key={agent.agent}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -145,7 +145,7 @@ export default function Analytics() {
                             subtitle="Errors that the pipeline subsequently recovered from"
                         />
                     </div>
-                </motion.div>
+                </M.div>
             ))}
 
             {metrics.length === 0 && !loading && (

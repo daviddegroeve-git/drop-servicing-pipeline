@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { ExternalLink, Phone, MapPin, Eye, CheckCircle, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as M, AnimatePresence } from 'framer-motion';
 
 export default function Pipeline() {
     const [leads, setLeads] = useState([]);
@@ -101,7 +101,7 @@ export default function Pipeline() {
                             </thead>
                             <tbody className="divide-y divide-zinc-800/50">
                                 {leads.map((lead, i) => (
-                                    <motion.tr
+                                    <M.tr
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: i * 0.05 }}
@@ -156,7 +156,7 @@ export default function Pipeline() {
                                                 )}
                                             </div>
                                         </td>
-                                    </motion.tr>
+                                    </M.tr>
                                 ))}
                             </tbody>
                         </table>
@@ -168,7 +168,7 @@ export default function Pipeline() {
             <AnimatePresence>
                 {verificationModal.isOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                        <motion.div
+                        <M.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
@@ -228,7 +228,7 @@ export default function Pipeline() {
                                     Confirm & Unlock Site
                                 </button>
                             </div>
-                        </motion.div>
+                        </M.div>
                     </div>
                 )}
             </AnimatePresence>

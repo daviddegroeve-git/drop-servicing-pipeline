@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Save, Loader2, Info } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion as M } from 'framer-motion';
 
 export default function Settings() {
     const [settings, setSettings] = useState({});
@@ -65,7 +65,7 @@ export default function Settings() {
 
             <div className="space-y-8">
                 {Object.entries(settings).map(([key, value], i) => (
-                    <motion.div
+                    <M.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
@@ -97,7 +97,7 @@ export default function Settings() {
                             onChange={(e) => setSettings({ ...settings, [key]: e.target.value })}
                             spellCheck="false"
                         />
-                    </motion.div>
+                    </M.div>
                 ))}
             </div>
         </div>
