@@ -77,11 +77,11 @@ class Orchestrator {
 
       // Loop to process ALL pending leads in the backlog
       while (activeDbLead) {
-        // Enforce a strict time limit to prevent Vercel 120s timeouts 
-        // (leaving a 40s buffer for the final lead to finish generation)
+        // Enforce a strict time limit to prevent Cloud Run 1-hour timeouts 
+        // (leaving a 10-minute buffer for the final lead to finish generation)
         const elapsedSeconds = (Date.now() - startTime) / 1000;
-        if (elapsedSeconds > 80) {
-          console.log(`\n[Orchestrator] Approaching Vercel timeout (${elapsedSeconds.toFixed(1)}s elapsed). Exiting loop queue early. Remaining leads will be processed in the next cycle.`);
+        if (elapsedSeconds > 3000) {
+          console.log(`\n[Orchestrator] Approaching Cloud Run timeout (${elapsedSeconds.toFixed(1)}s elapsed). Exiting loop queue early. Remaining leads will be processed in the next cycle.`);
           await this.db.addLog('orchestrator', 'cycle_paused', null, { reason: 'Approaching timeout limit', elapsed: elapsedSeconds }, 'warning');
           break;
         }
