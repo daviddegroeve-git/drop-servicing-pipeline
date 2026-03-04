@@ -80,7 +80,7 @@ class CreatorAgent {
 
             const response = await Promise.race([
                 this.ai.models.generateContent({
-                    model: 'gemini-2.5-pro',
+                    model: 'gemini-2.5-flash',
                     contents: prompt,
                 }),
                 timeoutPromise

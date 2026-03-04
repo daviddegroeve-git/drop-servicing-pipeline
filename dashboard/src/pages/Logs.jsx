@@ -109,41 +109,78 @@ export default function Logs() {
             </header>
 
             {/* Agent Status Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6 flex-shrink-0">
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6 flex-shrink-0">
                 <div
                     onClick={() => setSelectedAgent('all')}
-                    className={`p-3 rounded-xl border cursor-pointer transition-colors flex flex-col justify-center ${selectedAgent === 'all' ? 'bg-primary/20 border-primary shadow-[0_0_15px_rgba(59,130,246,0.15)]' : 'bg-surface border-zinc-800 hover:bg-zinc-800/80'}`}
+                    className={`p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between min-h-[100px] ${selectedAgent === 'all' ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(59,130,246,0.15)] ring-1 ring-primary/50' : 'bg-surface border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'}`}
                 >
-                    <div className="text-sm font-bold text-zinc-100 flex items-center gap-2 mb-1">
-                        <Activity className="w-4 h-4 text-primary" /> All Agents
+                    <div className="text-sm font-bold text-zinc-100 flex items-center gap-2 mb-2">
+                        <Activity className={`w-4 h-4 ${selectedAgent === 'all' ? 'text-primary' : 'text-zinc-500'}`} />
+                        All Agents
                     </div>
-                    <div className="text-xs text-zinc-400">View combined log stream</div>
+                    <div className="p-2 rounded-lg bg-black/20 text-xs text-zinc-400">
+                        View combined log stream
+                    </div>
                 </div>
 
                 {uniqueAgents.map(agent => {
                     const lastAction = agentLastActions[agent];
-                    const AgentIcon = Clock;
+
+                    // Parse the time string to separate number and unit for styled display
+                    let timeVal = "";
+                    let timeUnit = "";
+                    if (lastAction) {
+                        const timeStr = getTimeSince(lastAction.created_at);
+                        if (timeStr === 'Just now') {
+                            timeVal = "Now";
+                            timeUnit = "";
+                        } else {
+                            const match = timeStr.match(/^(\d+)(.*?)\s+(ago)$/);
+                            if (match) {
+                                timeVal = match[1] + match[2];
+                                timeUnit = match[3];
+                            } else {
+                                timeVal = timeStr;
+                            }
+                        }
+                    }
+
                     return (
                         <div
                             key={agent}
                             onClick={() => setSelectedAgent(agent)}
-                            className={`p-3 rounded-xl border cursor-pointer transition-colors relative ${selectedAgent === agent ? 'bg-primary/20 border-primary shadow-[0_0_15px_rgba(59,130,246,0.15)]' : 'bg-surface border-zinc-800 hover:bg-zinc-800/80'}`}
+                            className={`p-4 rounded-xl border cursor-pointer transition-all relative min-h-[100px] flex flex-col justify-between ${selectedAgent === agent ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(59,130,246,0.15)] ring-1 ring-primary/50' : 'bg-surface border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'}`}
                         >
-                            <div className="flex justify-between items-center mb-1">
-                                <span className="text-sm font-bold capitalize text-zinc-200">{agent}</span>
+                            <div className="flex justify-between items-start mb-2">
+                                <span className={`text-sm font-bold capitalize ${selectedAgent === agent ? 'text-primary-foreground' : 'text-zinc-200'}`}>
+                                    {agent}
+                                </span>
                                 {lastAction && (
-                                    <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${selectedAgent === agent ? 'bg-primary/30 text-blue-200' : 'bg-zinc-800 text-zinc-400'}`}>
-                                        {getTimeSince(lastAction.created_at)}
-                                    </span>
+                                    <div className="flex flex-col items-end leading-none">
+                                        <span className={`text-2xl font-black ${selectedAgent === agent ? 'text-primary' : 'text-zinc-300'}`}>
+                                            {timeVal}
+                                        </span>
+                                        {timeUnit && (
+                                            <span className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${selectedAgent === agent ? 'text-primary/70' : 'text-zinc-500'}`}>
+                                                {timeUnit}
+                                            </span>
+                                        )}
+                                    </div>
                                 )}
                             </div>
-                            {lastAction ? (
-                                <div className="text-xs text-zinc-400 truncate w-full flex items-center gap-1" title={lastAction.action}>
-                                    {lastAction.action}
-                                </div>
-                            ) : (
-                                <div className="text-xs text-zinc-600">No actions yet</div>
-                            )}
+                            <div className="p-2 rounded-lg bg-black/20">
+                                {lastAction ? (
+                                    <div className="text-xs text-zinc-400 truncate w-full flex items-center gap-1.5" title={lastAction.action}>
+                                        <Clock className="w-3 h-3 text-zinc-500" />
+                                        {lastAction.action}
+                                    </div>
+                                ) : (
+                                    <div className="text-xs text-zinc-600 flex items-center gap-1.5">
+                                        <Clock className="w-3 h-3 text-zinc-700" />
+                                        No actions yet
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )
                 })}
