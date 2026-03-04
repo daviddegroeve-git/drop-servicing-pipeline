@@ -88,7 +88,11 @@ class CreatorAgent {
 
             clearTimeout(timeoutId);
 
-            let htmlContent = response.text;
+            let htmlContent = response.text || '';
+
+            if (!htmlContent) {
+                throw new Error("Gemini returned an empty response. This may be due to safety filters or a model failure.");
+            }
 
             // Clean up markdown block if the model included it despite the instruction
             if (htmlContent.startsWith('```html')) {

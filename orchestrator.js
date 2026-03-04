@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const CreatorAgent = require('./agents/creator');
+const RetoucherAgent = require('./agents/retoucher');
 const PublisherAgent = require('./agents/publisher');
 const CloserAgent = require('./agents/closer');
 const BillerAgent = require('./agents/biller');
@@ -12,6 +13,7 @@ class Orchestrator {
   constructor() {
     this.scout = new ScoutAgent();
     this.creator = new CreatorAgent();
+    this.retoucher = new RetoucherAgent();
     this.publisher = new PublisherAgent();
     this.closer = new CloserAgent();
     this.biller = new BillerAgent();
@@ -90,6 +92,12 @@ class Orchestrator {
         const rawHtml = await this.creator.createWebsite(activeLead, this.db);
         await this.db.addLog('creator', 'website_generated', activeLead.placeId, { length: rawHtml.length }, 'success');
         await this.db.updateLeadStatus(activeLead.placeId, 'created', { website_html: rawHtml });
+
+        // Step 2.5: Retouch HTML
+        await this.db.addLog('retoucher', 'audit_started', activeLead.placeId, { name: activeLead.name }, 'info');
+        const finalHtml = await this.retoucher.retouchWebsite(rawHtml, activeLead);
+        await this.db.addLog('retoucher', 'audit_completed', activeLead.placeId, { length: finalHtml.length }, 'success');
+        await this.db.updateLeadStatus(activeLead.placeId, 'retouched', { website_html: finalHtml });
 
         // Step 3: Publish to Vercel (Dynamic Generation)
         await this.db.addLog('publisher', 'deployment_started', activeLead.placeId, {}, 'info');
