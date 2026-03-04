@@ -57,53 +57,61 @@ class Orchestrator {
 
       await this.db.addLog('scout', 'search_completed', null, { found: leads.length, query }, 'success');
 
-      // We'll iterate through all scouted leads and process the first one that hasn't been pitched yet
-      let activeLead = null;
-
+      // Step 1a: Upsert all valid scouted leads into the database
       for (const lead of leads) {
-        // Step 1a: Upsert lead into database (marks as scouted by default)
         await this.db.upsertLead(lead);
-
-        // Fetch to check status
-        const dbLead = await this.db.getLead(lead.placeId);
-
-        // We only want to process leads that are purely 'scouted'
-        // If they are 'created', 'published', or 'pitched', we skip them to avoid spam
-        if (dbLead && dbLead.status === 'scouted') {
-          activeLead = lead;
-          break;
-        }
       }
 
-      if (!activeLead) {
-        console.log('[Orchestrator] All leads in this batch have already been processed. Moving to next query.');
-        await this.db.addLog('orchestrator', 'batch_skipped', null, { reason: 'All leads processed' }, 'warning');
+      // Step 1b: Fetch the next pending lead from the database to process, oldest first
+      const activeDbLead = await this.db.getPendingLead();
+
+      if (!activeDbLead) {
+        console.log('[Orchestrator] All leads have already been processed or are problematic.');
+        await this.db.addLog('orchestrator', 'batch_skipped', null, { reason: 'No viable leads in backlog' }, 'warning');
         return;
       }
+
+      // Format it to match the activeLead object structure normally returned by the scout
+      const activeLead = {
+        name: activeDbLead.name,
+        phone: activeDbLead.phone,
+        placeId: activeDbLead.place_id,
+        address: activeDbLead.address,
+        location: { lat: activeDbLead.lat, lng: activeDbLead.lng },
+        photos: activeDbLead.photos || []
+      };
 
       console.log(`[Orchestrator] Selected lead: ${activeLead.name} (${activeLead.phone})`);
       await this.db.addLog('orchestrator', 'lead_selected', activeLead.placeId, { name: activeLead.name, phone: activeLead.phone }, 'info');
 
       // Step 2: Create HTML
-      await this.db.addLog('creator', 'generation_started', activeLead.placeId, { name: activeLead.name }, 'info');
-      const rawHtml = await this.creator.createWebsite(activeLead, this.db);
-      await this.db.addLog('creator', 'website_generated', activeLead.placeId, { length: rawHtml.length }, 'success');
-      await this.db.updateLeadStatus(activeLead.placeId, 'created', { website_html: rawHtml });
+      try {
+        await this.db.addLog('creator', 'generation_started', activeLead.placeId, { name: activeLead.name }, 'info');
+        const rawHtml = await this.creator.createWebsite(activeLead, this.db);
+        await this.db.addLog('creator', 'website_generated', activeLead.placeId, { length: rawHtml.length }, 'success');
+        await this.db.updateLeadStatus(activeLead.placeId, 'created', { website_html: rawHtml });
 
-      // Step 3: Publish to Vercel (Dynamic Generation)
-      await this.db.addLog('publisher', 'deployment_started', activeLead.placeId, {}, 'info');
-      const liveUrl = await this.publisher.handlePublish(activeLead.placeId);
-      await this.db.addLog('publisher', 'deployment_success', activeLead.placeId, { url: liveUrl }, 'success');
-      await this.db.updateLeadStatus(activeLead.placeId, 'published', { vercel_url: liveUrl });
+        // Step 3: Publish to Vercel (Dynamic Generation)
+        await this.db.addLog('publisher', 'deployment_started', activeLead.placeId, {}, 'info');
+        const liveUrl = await this.publisher.handlePublish(activeLead.placeId);
+        await this.db.addLog('publisher', 'deployment_success', activeLead.placeId, { url: liveUrl }, 'success');
+        await this.db.updateLeadStatus(activeLead.placeId, 'published', { vercel_url: liveUrl });
 
-      // Step 4: Close (Send WhatsApp text)
-      await this.db.addLog('closer', 'pitch_started', activeLead.placeId, { phone: activeLead.phone }, 'info');
-      await this.closer.pitchLead(activeLead.name, activeLead.phone, liveUrl, this.db);
-      await this.db.addLog('closer', 'pitch_sent', activeLead.placeId, { url: liveUrl }, 'success');
-      await this.db.updateLeadStatus(activeLead.placeId, 'pitched');
+        // Step 4: Close (Send WhatsApp text)
+        await this.db.addLog('closer', 'pitch_started', activeLead.placeId, { phone: activeLead.phone }, 'info');
+        await this.closer.pitchLead(activeLead.name, activeLead.phone, liveUrl, this.db);
+        await this.db.addLog('closer', 'pitch_sent', activeLead.placeId, { url: liveUrl }, 'success');
+        await this.db.updateLeadStatus(activeLead.placeId, 'pitched');
 
-      console.log(`[Orchestrator] Successfully completed pipeline for ${activeLead.name}`);
-      await this.db.addLog('orchestrator', 'cycle_success', activeLead.placeId, { name: activeLead.name }, 'success');
+        console.log(`[Orchestrator] Successfully completed pipeline for ${activeLead.name}`);
+        await this.db.addLog('orchestrator', 'cycle_success', activeLead.placeId, { name: activeLead.name }, 'success');
+
+      } catch (innerError) {
+        console.error(`[Orchestrator] Failed to process lead ${activeLead.name}:`, innerError.message);
+        await this.db.addLog('orchestrator', 'lead_error', activeLead.placeId, { message: innerError.message }, 'error');
+        // Increment retry count so this lead doesn't block the queue forever
+        await this.db.incrementRetryCount(activeLead.placeId, innerError.message);
+      }
 
     } catch (error) {
       console.error(`[Orchestrator] Pipeline encountered an error and aborted this cycle.`, error.message);

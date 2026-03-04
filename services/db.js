@@ -58,6 +58,26 @@ class DatabaseService {
     }
 
     /**
+     * Fetches the next available lead that needs processing
+     */
+    async getPendingLead() {
+        const { data, error } = await this.supabase
+            .from('leads')
+            .select('*')
+            .eq('status', 'scouted')
+            .or('retry_count.lt.3,retry_count.is.null')
+            .order('updated_at', { ascending: true })
+            .limit(1)
+            .single();
+
+        if (error && error.code !== 'PGRST116') {
+            console.error(`[DB] Error fetching pending lead:`, error.message);
+            throw error;
+        }
+        return data || null;
+    }
+
+    /**
      * Updates the status of a lead and optionally attaches extra data (like HTML or URLs)
      * @param {string} placeId
      * @param {string} newStatus - The new status (scouted, created, published, pitched, error)
@@ -290,6 +310,33 @@ class DatabaseService {
 
         if (updateError) {
             console.error(`[DB] Error incrementing metric:`, updateError.message);
+        }
+    }
+
+    /**
+     * Increments the retry count for a lead and logs the last error
+     */
+    async incrementRetryCount(placeId, errorMessage) {
+        // Fetch current retry count
+        const { data: lead, error: fetchError } = await this.supabase
+            .from('leads')
+            .select('retry_count')
+            .eq('place_id', placeId)
+            .single();
+
+        const currentRetry = lead ? (lead.retry_count || 0) : 0;
+
+        const { error: updateError } = await this.supabase
+            .from('leads')
+            .update({
+                retry_count: currentRetry + 1,
+                last_error: errorMessage,
+                updated_at: new Date().toISOString()
+            })
+            .eq('place_id', placeId);
+
+        if (updateError) {
+            console.error(`[DB] Error incrementing retry count for ${placeId}:`, updateError.message);
         }
     }
 }
