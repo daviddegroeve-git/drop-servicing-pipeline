@@ -24,6 +24,8 @@ class Orchestrator {
    * Executes a single pipeline run
    */
   async runPipeline() {
+    const startTime = Date.now();
+
     // Fetch active search queries from the Supabase settings table, 
     // with a fallback to defaults if database row is missing.
     let queries;
@@ -75,6 +77,15 @@ class Orchestrator {
 
       // Loop to process ALL pending leads in the backlog
       while (activeDbLead) {
+        // Enforce a strict time limit to prevent Vercel 120s timeouts 
+        // (leaving a 40s buffer for the final lead to finish generation)
+        const elapsedSeconds = (Date.now() - startTime) / 1000;
+        if (elapsedSeconds > 80) {
+          console.log(`\n[Orchestrator] Approaching Vercel timeout (${elapsedSeconds.toFixed(1)}s elapsed). Exiting loop queue early. Remaining leads will be processed in the next cycle.`);
+          await this.db.addLog('orchestrator', 'cycle_paused', null, { reason: 'Approaching timeout limit', elapsed: elapsedSeconds }, 'warning');
+          break;
+        }
+
         // Format it to match the activeLead object structure normally returned by the scout
         const activeLead = {
           name: activeDbLead.name,
