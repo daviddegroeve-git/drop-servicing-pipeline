@@ -40,7 +40,24 @@ class CloserAgent {
      */
     async pitchLead(businessName, phone, vercelUrl, db) {
         const formattedPhone = this.formatPhoneNumber(phone);
-        console.log(`[Closer] Routing pitch for ${businessName} to local service...`);
+
+        // 1. Ensure lead exists in database (Required for dashboard login)
+        try {
+            const existingLead = await db.getLeadByPhone(formattedPhone);
+            if (!existingLead) {
+                console.log(`[Closer] Lead ${phone} not found. Creating manual entry...`);
+                await db.upsertLead({
+                    placeId: `manual-${formattedPhone}`,
+                    name: businessName,
+                    phone: phone,
+                    address: 'Direct Outreach'
+                });
+            }
+        } catch (dbErr) {
+            console.warn(`[Closer] Database check failed: ${dbErr.message}. Proceeding with pitch anyway.`);
+        }
+
+        console.log(`[Closer] Routing pitch for ${businessName} to cloud service...`);
 
         // Image URL hosted on Vercel
         const marketingImageUrl = 'https://drop-servicing-pipeline.vercel.app/marketing/offer.png';
