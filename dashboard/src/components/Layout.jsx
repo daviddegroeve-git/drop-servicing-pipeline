@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, Activity, Settings, Zap, Globe, Map as MapIcon, MessageSquare, BarChart3, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, Users, Activity, Settings, Zap, Globe, Map as MapIcon, MessageSquare, BarChart3, MessageCircle, LogOut } from 'lucide-react';
 import GlobalStatusBar from './GlobalStatusBar';
+import { useAuth } from './AuthContext';
+import { supabase } from '../lib/supabase';
 
 const Layout = () => {
+    const { user } = useAuth();
     const navItems = [
         { to: '/', icon: LayoutDashboard, label: 'Overview' },
         { to: '/pipeline', icon: Users, label: 'Pipeline' },
@@ -32,6 +35,11 @@ const Layout = () => {
         } finally {
             setTriggering(false);
         }
+    };
+
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) console.error('Error logging out:', error.message);
     };
 
     return (
@@ -70,11 +78,30 @@ const Layout = () => {
                     <button
                         onClick={handleTrigger}
                         disabled={triggering}
-                        className={`w-full py-3 px-4 ${triggering ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary hover:bg-blue-600'} text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20`}
+                        className={`w-full py-3 px-4 ${triggering ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary hover:bg-blue-600'} text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20 mb-4`}
                     >
                         <Zap className={`h-4 w-4 fill-current ${triggering ? 'animate-pulse' : ''}`} />
                         {triggering ? 'Launching...' : 'Trigger Pipeline'}
                     </button>
+
+                    <div className="pt-4 border-t border-zinc-800">
+                        <div className="flex items-center gap-3 px-2 mb-4">
+                            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                                {user?.email?.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-zinc-100 truncate">{user?.email}</p>
+                                <p className="text-[10px] text-zinc-500">Administrator</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all duration-200"
+                        >
+                            <LogOut className="h-4 w-4" />
+                            Sign Out
+                        </button>
+                    </div>
                 </div>
             </aside>
 
