@@ -6,59 +6,41 @@ const axios = require('axios');
  */
 class CloserAgent {
     constructor() {
-        this.instanceId = process.env.ULTRAMSG_INSTANCE_ID || '';
-        this.token = process.env.ULTRAMSG_TOKEN || '';
+        // Local WhatsApp service endpoint
+        this.baseURL = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:8080';
 
-        // Ultramsg requires both instance ID and token to work
-        this.isConfigured = !!(this.instanceId && this.token);
+        // Set up axios instance for local service
+        this.api = axios.create({
+            baseURL: this.baseURL,
+            headers: { 'Content-Type': 'application/json' }
+        });
 
-        if (!this.isConfigured) {
-            console.warn('[Closer] Ultramsg environment variables missing. WhatsApp pitching is disabled.');
-        } else {
-            // Set up common axios instance for cleaner code
-            this.api = axios.create({
-                baseURL: `https://api.ultramsg.com/${this.instanceId}/messages`,
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            });
-        }
+        console.log(`[Closer] Initialized with local WhatsApp service at ${this.baseURL}`);
     }
 
     /**
-     * Cleans and formats phone numbers to E.164 without the '+' for Ultramsg
-     * Ultramsg expects mostly international format digits (e.g. 966568471238) optionally with @c.us
-     * @param {string} rawPhone - The phone number scraped from Google Places
-     * @returns {string} Formatted phone number
+     * Cleans and formats phone numbers to international format (e.g., 966...)
      */
     formatPhoneNumber(rawPhone) {
-        // Remove all non-numeric characters
         let cleaned = rawPhone.replace(/\D/g, '');
 
-        // If KSA local format (e.g., 056...), prepend country code
+        // If it starts with 05 and is 10 digits, it's a local KSA number
         if (cleaned.startsWith('05') && cleaned.length === 10) {
             cleaned = '966' + cleaned.substring(1);
-        } else if (!cleaned.startsWith('966') && cleaned.length > 5 && cleaned.length < 10) {
-            // Very roughly assuming it's a local KSA fixed line (e.g 9200...) or missing country code
-            console.warn(`[Closer] Phone number ${rawPhone} doesn't look like international format. Passing to Ultramsg as is.`);
+        } else if (cleaned.length === 9 && !cleaned.startsWith('966')) {
+            // If it's 9 digits (e.g. 5...), prepend 966
+            cleaned = '966' + cleaned;
         }
 
         return cleaned;
     }
 
     /**
-     * Sends the pitch message with the live Vercel URL
-     * @param {string} businessName - The formatted name of the business
-     * @param {string} phone - The unformatted phone number
-     * @param {string} vercelUrl - The deployed Vercel URL
-     * @param {Object} db - Database Service instance
+     * Sends the pitch message via the local WhatsApp service
      */
     async pitchLead(businessName, phone, vercelUrl, db) {
-        if (!this.isConfigured) {
-            console.log(`[Closer] Skipped pitching ${businessName} - Ultramsg is purely optional and currently disabled.`);
-            return null;
-        }
-
         const formattedPhone = this.formatPhoneNumber(phone);
-        console.log(`[Closer] Texting ${businessName} at ${formattedPhone} via Ultramsg...`);
+        console.log(`[Closer] Routing pitch for ${businessName} to local service...`);
 
         let templates;
         try {
@@ -77,32 +59,32 @@ class CloserAgent {
 
         const msgEn = buildMessage(templates.en, businessName, vercelUrl);
         const msgAr = buildMessage(templates.ar, businessName, vercelUrl);
-
-        // Combine bilingual message
         const messageBody = `${msgEn}\n\n---\n\n${msgAr}`;
 
+        return this.sendMessage(formattedPhone, messageBody);
+    }
+
+    /**
+     * Generic method to send a message via the local WhatsApp service
+     * @param {string} to - The formatted phone number (e.g. 966...)
+     * @param {string} message - The message body
+     */
+    async sendMessage(to, message) {
         try {
-            // Ultramsg expects URL encoded form data
-            const params = new URLSearchParams();
-            params.append('token', this.token);
-            params.append('to', formattedPhone);
-            params.append('body', messageBody);
+            const response = await this.api.post('/send', {
+                to: to,
+                message: message
+            });
 
-            const response = await this.api.post('/chat', params);
-
-            if (response.data && response.data.sent === 'true') {
-                console.log(`[Closer] Successfully queued WhatsApp message via Ultramsg to ${formattedPhone} (MsgId: ${response.data.message.id})`);
-                return response.data.message.id;
+            if (response.data && response.data.success) {
+                console.log(`[Closer] Local service confirmed message sent to ${to}`);
+                return 'local_sent';
             } else {
-                console.warn(`[Closer] Ultramsg accepted request but didn't confirm 'sent':`, response.data);
-                return response.data?.message?.id || 'unknown_id'; // Fallback
+                console.warn(`[Closer] Local service accepted request but didn't confirm success:`, response.data);
+                return 'unknown';
             }
-
         } catch (error) {
-            console.error(`[Closer] Error sending WhatsApp message via Ultramsg: ${error.message}`);
-            if (error.response) {
-                console.error('[Closer] Ultramsg Response:', error.response.data);
-            }
+            console.error(`[Closer] Error sending via local service: ${error.message}`);
             throw error;
         }
     }

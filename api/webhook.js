@@ -2,7 +2,7 @@ const { waitUntil } = require('@vercel/functions');
 const DatabaseService = require('../services/db');
 const ChatbotAgent = require('../agents/chatbot');
 
-// Ultramsg sends Webhook POST requests 
+// Webhook handles both legacy Ultramsg and the new local WhatsApp microservice
 module.exports = async function handler(request, response) {
     if (request.method !== 'POST') {
         return response.status(405).json({ error: 'Method not allowed' });
@@ -10,31 +10,44 @@ module.exports = async function handler(request, response) {
 
     try {
         const payload = request.body;
+        console.log(`[Webhook] Received event from: ${payload?.instanceId || 'unknown'}`);
 
-        // Ultramsg specific structure
-        // {"event_type":"message_received","instanceId":"...","data":{"id":"...","from":"...","to":"...","body":"..."}}
+        // 1. Handle "Message Received" (Inbound)
         if (payload?.event_type === 'message_received' && payload?.data) {
-            // Only respond to text 'chat' messages
             if (payload.data.type === 'chat') {
                 const incomingPhone = payload.data.from;
                 const messageText = payload.data.body;
+                const isFromMe = payload.data.fromMe === true;
 
-                // Do not reply to messages sent from the bot itself (echoes)
-                if (incomingPhone !== payload.data.to) {
-                    // Process async to avoid timing out the webhook acknowledgment
-                    waitUntil(processIncomingChat(incomingPhone, messageText).catch(console.error));
+                // Support both Ultramsg (which doesn't usually echo) and local-docker
+                if (!isFromMe) {
+                    // Safety: Only trigger AI responses for messages from the last 30 minutes
+                    // Historic sync messages will have an older timestamp
+                    const msgTimestamp = payload.data.timestamp * 1000; // Convert to ms
+                    const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
+                    const isRecent = msgTimestamp > thirtyMinutesAgo;
+
+                    if (isRecent) {
+                        waitUntil(processIncomingChat(incomingPhone, messageText).catch(console.error));
+                    } else {
+                        // Just log old messages, don't trigger AI
+                        waitUntil(logOnlyIncoming(incomingPhone, messageText).catch(console.error));
+                    }
                 }
             }
         }
 
-        // Handle outbound messages (sent from phone manually, or by code pitches/AI replies)
+        // 2. Handle "Message Create" (Outbound from phone or API)
         if (payload?.event_type === 'message_create' && payload?.data) {
             if (payload.data.type === 'chat') {
                 const outgoingPhone = payload.data.to;
                 const messageText = payload.data.body;
+                const isFromMe = payload.data.fromMe === true;
 
-                // Process async
-                waitUntil(processOutboundChat(outgoingPhone, messageText).catch(console.error));
+                // For local-docker, we only want to log messages that actually originated from the phone/API
+                if (isFromMe || payload.instanceId !== 'local-docker') {
+                    waitUntil(processOutboundChat(outgoingPhone, messageText).catch(console.error));
+                }
             }
         }
 
@@ -86,4 +99,15 @@ async function processOutboundChat(outgoingPhone, messageText) {
     // Save it as a standalone outbound message (approved so it shows in Inbox)
     await db.saveOutboundChatLog(placeId, outgoingPhone, messageText);
     console.log(`[Webhook] Outbound logged to ${outgoingPhone} (Lead: ${lead?.name || 'Unknown'})`);
+}
+
+async function logOnlyIncoming(incomingPhone, messageText) {
+    const db = new DatabaseService();
+    // Find if this number belongs to a lead
+    const lead = await db.getLeadByPhone(incomingPhone);
+    const placeId = lead ? lead.place_id : null;
+
+    // Just log it, no translation or AI reply
+    await db.saveInboundChatLog(placeId, incomingPhone, messageText, null);
+    console.log(`[Webhook] Old message logged (sync only) from ${incomingPhone}`);
 }
