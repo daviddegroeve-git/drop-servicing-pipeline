@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../components/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { Lock, Phone, MessageCircle } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Login() {
     const { user } = useAuth();
