@@ -73,13 +73,15 @@ class BillerAgent {
         const price = lead.subscription_tier === 'yearly' ? '990' : '99';
 
         const message = `
-Hello from Almusbah Agency 👋
+Hello from ALATLAS Agency 👋
 
 This is a friendly automated reminder that the ${subType} subscription for your website (${lead.name}) will expire in exactly *${days} ${dayWord}*.
 
-To keep your website online without interruption, please renew your subscription by transferring ${price} SAR to our STC Pay account: 054 606 6363.
+You can view your status and renew your subscription at your Dashboard: 
+👉 https://drop-servicing-pipeline.vercel.app/client-dashboard
 
-If you have already transferred the payment, please ignore this message. Let us know if you need any assistance!
+Alternatively, transfer ${price} SAR to our STC Pay: +966 50 791 3514. 
+If you have already paid, please ignore this message.
 `.trim();
 
         // Ensure phone is formatted correctly for Ultramsg (e.g., must contain country code)

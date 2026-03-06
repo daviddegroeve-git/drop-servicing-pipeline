@@ -47,8 +47,8 @@ class CloserAgent {
             templates = await db.getSetting('whatsapp_template');
         } catch (e) {
             templates = {
-                en: "Hello {businessName}! We built a website for you: {previewUrl}",
-                ar: "مرحباً {businessName}! لقد قمنا بإنشاء موقع إلكتروني لك: {previewUrl}"
+                en: "Hello {businessName}! 💎 We built a premium preview for your new website: {previewUrl}\n\nYou can manage your site and track progress at your ALATLAS Client Dashboard: https://drop-servicing-pipeline.vercel.app/client-dashboard\n(Sign in instantly with your WhatsApp number!)",
+                ar: "مرحباً {businessName}! 💎 لقد قمنا بإنشاء معاينة متميزة لموقعك الإلكتروني الجديد: {previewUrl}\n\nيمكنك إدارة موقعك ومتابعة التقدم من خلال لوحة تحكم عملاء ALATLAS: https://drop-servicing-pipeline.vercel.app/client-dashboard\n(سجل الدخول فوراً باستخدام رقم الواتساب الخاص بك!)"
             };
         }
 
