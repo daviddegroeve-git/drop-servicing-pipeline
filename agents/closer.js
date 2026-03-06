@@ -12,7 +12,8 @@ class CloserAgent {
         // Set up axios instance for local service
         this.api = axios.create({
             baseURL: this.baseURL,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            timeout: 30000 // 30 second timeout for messaging
         });
 
         console.log(`[Closer] Initialized with local WhatsApp service at ${this.baseURL}`);
@@ -91,16 +92,27 @@ class CloserAgent {
         const messageBody = `${msgEn}\n\n---\n\n${msgAr}`;
 
         // Send marketing image first (using Ultramsg for cloud reliability)
+        let lastError = null;
         try {
             const { sendMessage: sendUltramsg, sendImage } = require('../services/ultramsg');
-            console.log(`[Closer] Sending marketing image to ${formattedPhone}...`);
+            console.log(`[Closer] Attempting Ultramsg for ${formattedPhone}...`);
             await sendImage(formattedPhone, marketingImageUrl, "ALATLAS Intelligence 💎");
-
-            console.log(`[Closer] Sending text pitch via Ultramsg to ${formattedPhone}...`);
-            return await sendUltramsg(formattedPhone, messageBody);
+            await sendUltramsg(formattedPhone, messageBody);
+            console.log(`[Closer] Pitch successfully sent via Ultramsg.`);
+            return 'ultramsg_sent';
         } catch (err) {
-            console.warn(`[Closer] Failed to send via Ultramsg: ${err.message}. Falling back to local...`);
-            return this.sendMessage(formattedPhone, messageBody);
+            console.warn(`[Closer] Ultramsg failed: ${err.message}. Falling back to local/cloud-run service...`);
+            lastError = err;
+        }
+
+        // Fallback to local service (which might be Cloud Run)
+        try {
+            await this.sendMessage(formattedPhone, messageBody);
+            console.log(`[Closer] Pitch successfully sent via local/cloud-run service.`);
+            return 'local_sent';
+        } catch (err) {
+            console.error(`[Closer] ALL outreach channels failed for ${formattedPhone}. Reporting hard failure.`);
+            throw new Error(`Outreach Failed. Primary Err: ${lastError?.message || 'Unknown'}. Secondary Err: ${err.message}`);
         }
     }
 
@@ -118,10 +130,11 @@ class CloserAgent {
 
             if (response.data && response.data.success) {
                 console.log(`[Closer] Local service confirmed message sent to ${to}`);
-                return 'local_sent';
+                return true;
             } else {
-                console.warn(`[Closer] Local service accepted request but didn't confirm success:`, response.data);
-                return 'unknown';
+                const errMsg = response.data?.error || 'Unknown error from local service';
+                console.error(`[Closer] Local service failed: ${errMsg}`);
+                throw new Error(errMsg);
             }
         } catch (error) {
             console.error(`[Closer] Error sending via local service: ${error.message}`);
