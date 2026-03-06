@@ -1,28 +1,30 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { useLanguage } from './LanguageContext';
 import { supabase } from '../lib/supabase';
 import {
-    Layout as LayoutIcon,
     User,
     CreditCard,
     LogOut,
     Menu,
     X,
-    Globe
+    Globe,
+    Languages
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const navigation = [
-    { name: 'My Website', href: '/my-website', icon: Globe },
-    { name: 'Profile', href: '/profile', icon: User },
-    { name: 'Payment', href: '/payment', icon: CreditCard },
-];
-
 export default function Layout() {
     const { user } = useAuth();
+    const { lang, toggleLanguage, t } = useLanguage();
     const navigate = useNavigate();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const navigation = [
+        { name: t('nav.website'), href: '/my-website', icon: Globe },
+        { name: t('nav.profile'), href: '/profile', icon: User },
+        { name: t('nav.payment'), href: '/payment', icon: CreditCard },
+    ];
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -32,19 +34,19 @@ export default function Layout() {
     return (
         <div className="min-h-screen bg-[#0a0c10] flex">
             {/* Sidebar - Desktop */}
-            <aside className="hidden lg:flex w-72 flex-col bg-[#11141b] border-r border-zinc-800/60 p-6">
+            <aside className="hidden lg:flex w-72 flex-col bg-[#11141b] border-r border-zinc-800/60 p-6 overflow-y-auto">
                 <div className="flex items-center gap-3 px-2 mb-10">
                     <img src="/logo.png" alt="ALATLAS" className="h-10 w-10 object-contain" />
-                    <div>
+                    <div className="flex-1">
                         <h2 className="text-xl font-black text-white italic tracking-tighter">ALATLAS</h2>
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Client Portal</p>
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">{t('nav.portal')}</p>
                     </div>
                 </div>
 
                 <nav className="flex-1 space-y-1.5">
                     {navigation.map((item) => (
                         <NavLink
-                            key={item.name}
+                            key={item.href}
                             to={item.href}
                             className={({ isActive }) =>
                                 `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
@@ -59,9 +61,23 @@ export default function Layout() {
                     ))}
                 </nav>
 
-                <div className="mt-auto pt-6 border-t border-zinc-800/60">
-                    <div className="bg-black/20 rounded-2xl p-4 flex items-center gap-3 mb-4">
-                        <div className="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
+                <div className="mt-8 pt-6 border-t border-zinc-800/60 space-y-4">
+                    {/* Language Switcher */}
+                    <button
+                        onClick={toggleLanguage}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-zinc-800/40 border border-zinc-700/50 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all group"
+                    >
+                        <div className="flex items-center gap-3">
+                            <Languages className="h-5 w-5 text-blue-500" />
+                            <span className="font-medium">{lang === 'ar' ? 'English' : 'العربية'}</span>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase">
+                            {lang.toUpperCase()}
+                        </span>
+                    </button>
+
+                    <div className="bg-black/20 rounded-2xl p-4 flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700 flex-shrink-0">
                             <User className="h-5 w-5 text-zinc-400" />
                         </div>
                         <div className="overflow-hidden">
@@ -69,12 +85,13 @@ export default function Layout() {
                             <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
                         </div>
                     </div>
+
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-red-400 hover:bg-red-400/10 transition-all duration-200 group"
                     >
-                        <LogOut className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-                        <span className="font-medium">Sign Out</span>
+                        <LogOut className={`h-5 w-5 transition-transform group-hover:${lang === 'ar' ? 'translate-x-1' : '-translate-x-1'}`} />
+                        <span className="font-medium">{t('nav.signOut')}</span>
                     </button>
                 </div>
             </aside>
@@ -85,27 +102,36 @@ export default function Layout() {
                     <img src="/logo.png" alt="ALATLAS" className="h-8 w-8 object-contain" />
                     <span className="font-bold text-white tracking-tighter italic">ALATLAS</span>
                 </div>
-                <button
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="p-2 text-zinc-400 hover:text-white transition-colors"
-                >
-                    {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={toggleLanguage}
+                        className="p-2 text-zinc-400 hover:text-white font-bold text-xs flex items-center gap-1.5"
+                    >
+                        <Languages className="h-4 w-4" />
+                        {lang.toUpperCase()}
+                    </button>
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="p-2 text-zinc-400 hover:text-white transition-colors"
+                    >
+                        {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                    </button>
+                </div>
             </div>
 
             {/* Mobile Menu Overlay */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div
-                        initial={{ opacity: 0, x: -100 }}
+                        initial={{ opacity: 0, x: lang === 'ar' ? 100 : -100 }}
                         animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -100 }}
+                        exit={{ opacity: 0, x: lang === 'ar' ? 100 : -100 }}
                         className="lg:hidden fixed inset-0 top-16 bg-[#11141b] z-40 p-6 flex flex-col"
                     >
                         <nav className="space-y-2">
                             {navigation.map((item) => (
                                 <NavLink
-                                    key={item.name}
+                                    key={item.href}
                                     to={item.href}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className={({ isActive }) =>
@@ -125,7 +151,7 @@ export default function Layout() {
                             className="mt-auto flex items-center gap-3 px-4 py-4 rounded-xl text-zinc-400 border border-zinc-800"
                         >
                             <LogOut className="h-6 w-6" />
-                            <span className="text-lg font-medium">Sign Out</span>
+                            <span className="text-lg font-medium">{t('nav.signOut')}</span>
                         </button>
                     </motion.div>
                 )}

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
+import { useLanguage } from '../components/LanguageContext';
 import { supabase } from '../lib/supabase';
 import { User, Mail, Phone, Lock, Save, AlertCircle, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Profile() {
     const { user } = useAuth();
+    const { lang, t } = useLanguage();
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
     const [error, setError] = useState(null);
@@ -35,12 +37,10 @@ export default function Profile() {
                 data: { name, phone }
             };
 
-            // Only update email if it changed (and it's not the proxy email)
             if (email !== user.email && !email.endsWith('.local')) {
                 updates.email = email;
             }
 
-            // Update password if provided
             if (password) {
                 updates.password = password;
             }
@@ -48,8 +48,8 @@ export default function Profile() {
             const { error: updateError } = await supabase.auth.updateUser(updates);
             if (updateError) throw updateError;
 
-            setMessage('Profile updated successfully!');
-            setPassword(''); // Clear password field
+            setMessage(t('profile.updated'));
+            setPassword('');
         } catch (err) {
             setError(err.message);
         } finally {
@@ -59,12 +59,12 @@ export default function Profile() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
-            <header>
+            <header className={lang === 'ar' ? 'text-right' : 'text-left'}>
                 <h1 className="text-3xl font-bold text-white flex items-center gap-3">
                     <User className="h-8 w-8 text-blue-500" />
-                    Profile Settings
+                    {t('profile.title')}
                 </h1>
-                <p className="text-zinc-500 mt-1">Manage your account information and security</p>
+                <p className="text-zinc-500 mt-1">{t('profile.subtitle')}</p>
             </header>
 
             <motion.div
@@ -89,54 +89,62 @@ export default function Profile() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-1.5">
-                            <label className="text-sm font-medium text-zinc-400 pl-1">Full Name</label>
+                            <label className={`text-sm font-medium text-zinc-400 ${lang === 'ar' ? 'pr-1 text-right' : 'pl-1 text-left'} block`}>
+                                {t('profile.fullName')}
+                            </label>
                             <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <div className={`absolute inset-y-0 ${lang === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4'} flex items-center pointer-events-none`}>
                                     <User className="h-5 w-5 text-zinc-500" />
                                 </div>
                                 <input
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="w-full bg-black/40 border border-zinc-800 rounded-xl py-3 pl-11 pr-4 text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium"
+                                    className={`w-full bg-black/40 border border-zinc-800 rounded-xl py-3 ${lang === 'ar' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4 text-left'} text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium`}
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-sm font-medium text-zinc-400 pl-1">Email Address</label>
+                            <label className={`text-sm font-medium text-zinc-400 ${lang === 'ar' ? 'pr-1 text-right' : 'pl-1 text-left'} block`}>
+                                {t('profile.email')}
+                            </label>
                             <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <div className={`absolute inset-y-0 ${lang === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4'} flex items-center pointer-events-none`}>
                                     <Mail className="h-5 w-5 text-zinc-500" />
                                 </div>
                                 <input
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-black/40 border border-zinc-800 rounded-xl py-3 pl-11 pr-4 text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium"
+                                    className={`w-full bg-black/40 border border-zinc-800 rounded-xl py-3 ${lang === 'ar' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4 text-left'} text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium`}
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-sm font-medium text-zinc-400 pl-1">Phone Number</label>
+                            <label className={`text-sm font-medium text-zinc-400 ${lang === 'ar' ? 'pr-1 text-right' : 'pl-1 text-left'} block`}>
+                                {t('profile.phone')}
+                            </label>
                             <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <div className={`absolute inset-y-0 ${lang === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4'} flex items-center pointer-events-none`}>
                                     <Phone className="h-5 w-5 text-zinc-500" />
                                 </div>
                                 <input
                                     type="text"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
-                                    className="w-full bg-black/40 border border-zinc-800 rounded-xl py-3 pl-11 pr-4 text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium"
+                                    className={`w-full bg-black/40 border border-zinc-800 rounded-xl py-3 ${lang === 'ar' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4 text-left'} text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium`}
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-sm font-medium text-zinc-400 pl-1">New Password (Leave blank to keep current)</label>
+                            <label className={`text-sm font-medium text-zinc-400 ${lang === 'ar' ? 'pr-1 text-right' : 'pl-1 text-left'} block text-xs`}>
+                                {t('profile.newPass')}
+                            </label>
                             <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <div className={`absolute inset-y-0 ${lang === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4'} flex items-center pointer-events-none`}>
                                     <Lock className="h-5 w-5 text-zinc-500" />
                                 </div>
                                 <input
@@ -144,22 +152,22 @@ export default function Profile() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="********"
-                                    className="w-full bg-black/40 border border-zinc-800 rounded-xl py-3 pl-11 pr-4 text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium"
+                                    className={`w-full bg-black/40 border border-zinc-800 rounded-xl py-3 ${lang === 'ar' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4 text-left'} text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium`}
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <div className="pt-6 border-t border-zinc-800 flex justify-end">
+                    <div className={`pt-6 border-t border-zinc-800 flex ${lang === 'ar' ? 'justify-start' : 'justify-end'}`}>
                         <button
                             type="submit"
                             disabled={loading}
                             className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50"
                         >
-                            {loading ? 'Saving...' : (
+                            {loading ? t('profile.saving') : (
                                 <>
                                     <Save className="h-5 w-5" />
-                                    Save Changes
+                                    {t('profile.save')}
                                 </>
                             )}
                         </button>
