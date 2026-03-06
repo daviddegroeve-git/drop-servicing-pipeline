@@ -2,11 +2,12 @@ const axios = require('axios');
 
 /**
  * Closer Agent
- * Uses Ultramsg WhatsApp API to send the deployed website to the business owner.
+ * Uses the custom local/cloud-run WhatsApp microservice to send messages.
+ * Migrated from Ultramsg to prioritize cost-effective local infrastructure.
  */
 class CloserAgent {
     constructor() {
-        // Local WhatsApp service endpoint
+        // Local WhatsApp service endpoint (Custom microservice)
         this.baseURL = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:8080';
 
         // Set up axios instance for local service
@@ -16,7 +17,7 @@ class CloserAgent {
             timeout: 30000 // 30 second timeout for messaging
         });
 
-        console.log(`[Closer] Initialized with local WhatsApp service at ${this.baseURL}`);
+        console.log(`[Closer] Using Local WhatsApp service at ${this.baseURL}`);
     }
 
     /**
@@ -64,10 +65,7 @@ class CloserAgent {
             console.warn(`[Closer] Registration or DB check failed: ${dbErr.message}. Proceeding with pitch anyway.`);
         }
 
-        console.log(`[Closer] Routing pitch for ${businessName} to cloud service...`);
-
-        // Image URL hosted on Vercel
-        const marketingImageUrl = 'https://drop-servicing-pipeline.vercel.app/marketing/offer.png';
+        console.log(`[Closer] Sending pitch for ${businessName} via local service...`);
 
         let templates;
         try {
@@ -91,28 +89,14 @@ class CloserAgent {
         const msgAr = buildMessage(templates.ar, businessName, vercelUrl, registrationData.pin);
         const messageBody = `${msgEn}\n\n---\n\n${msgAr}`;
 
-        // Send marketing image first (using Ultramsg for cloud reliability)
-        let lastError = null;
-        try {
-            const { sendMessage: sendUltramsg, sendImage } = require('../services/ultramsg');
-            console.log(`[Closer] Attempting Ultramsg for ${formattedPhone}...`);
-            await sendImage(formattedPhone, marketingImageUrl, "ALATLAS Intelligence 💎");
-            await sendUltramsg(formattedPhone, messageBody);
-            console.log(`[Closer] Pitch successfully sent via Ultramsg.`);
-            return 'ultramsg_sent';
-        } catch (err) {
-            console.warn(`[Closer] Ultramsg failed: ${err.message}. Falling back to local/cloud-run service...`);
-            lastError = err;
-        }
-
-        // Fallback to local service (which might be Cloud Run)
+        // Send via local/cloud-run service exclusively
         try {
             await this.sendMessage(formattedPhone, messageBody);
-            console.log(`[Closer] Pitch successfully sent via local/cloud-run service.`);
+            console.log(`[Closer] Pitch successfully sent to ${formattedPhone}`);
             return 'local_sent';
         } catch (err) {
-            console.error(`[Closer] ALL outreach channels failed for ${formattedPhone}. Reporting hard failure.`);
-            throw new Error(`Outreach Failed. Primary Err: ${lastError?.message || 'Unknown'}. Secondary Err: ${err.message}`);
+            console.error(`[Closer] Local outreach failed for ${formattedPhone}: ${err.message}`);
+            throw new Error(`Outreach Failed via Local Microservice: ${err.message}`);
         }
     }
 
