@@ -90,11 +90,11 @@ export default function Login() {
             >
                 <div className="bg-surface border border-zinc-800/60 p-8 rounded-3xl shadow-2xl">
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 mb-6">
-                            <Lock className="h-8 w-8 text-blue-500" />
+                        <div className="inline-flex items-center justify-center mb-6">
+                            <img src="/logo.png" alt="ALATLAS" className="h-20 w-20 object-contain drop-shadow-2xl" />
                         </div>
-                        <h1 className="text-3xl font-bold text-zinc-100">Client Portal</h1>
-                        <p className="text-zinc-500 mt-2">Sign in to manage your website</p>
+                        <h1 className="text-4xl font-black text-white italic tracking-tighter">ALATLAS</h1>
+                        <p className="text-zinc-500 mt-2 uppercase tracking-widest text-[10px] font-bold">Secure Client Portal</p>
                     </div>
 
                     {error && (

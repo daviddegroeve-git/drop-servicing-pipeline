@@ -48,11 +48,13 @@ const Layout = () => {
             <aside className="w-64 bg-surface border-r border-zinc-800 flex flex-col">
                 <div className="p-6 border-b border-zinc-800">
                     <Link to="/" className="flex flex-col gap-1 transition-opacity hover:opacity-80">
-                        <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent flex items-center gap-2">
-                            <Zap className="h-5 w-5 text-primary" />
-                            Drop Servicing
-                        </h1>
-                        <p className="text-xs text-zinc-500 ml-7">SaaS Pipeline Dashboard</p>
+                        <div className="flex items-center gap-3">
+                            <img src="/logo.png" alt="ALATLAS" className="h-8 w-8 object-contain" />
+                            <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent italic tracking-tighter">
+                                ALATLAS
+                            </h1>
+                        </div>
+                        <p className="text-[10px] text-zinc-500 ml-11 uppercase tracking-[0.2em] font-bold">Intelligence Ops</p>
                     </Link>
                 </div>
 

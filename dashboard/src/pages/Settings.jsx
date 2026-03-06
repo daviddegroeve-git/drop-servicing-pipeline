@@ -61,7 +61,7 @@ export default function Settings() {
         <div className="space-y-6 max-w-4xl">
             <header>
                 <h1 className="text-3xl font-bold text-zinc-100">Agent Configuration</h1>
-                <p className="text-zinc-400 mt-1">Fine-tune the behavior of your Drop Servicing pipeline.</p>
+                <p className="text-zinc-400 mt-1">Fine-tune the behavior of your ALATLAS Intelligence pipeline.</p>
             </header>
 
             <div className="space-y-8">

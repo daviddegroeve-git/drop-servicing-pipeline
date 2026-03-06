@@ -34,12 +34,10 @@ export default function Layout() {
             {/* Sidebar - Desktop */}
             <aside className="hidden lg:flex w-72 flex-col bg-[#11141b] border-r border-zinc-800/60 p-6">
                 <div className="flex items-center gap-3 px-2 mb-10">
-                    <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <LayoutIcon className="h-6 w-6 text-white" />
-                    </div>
+                    <img src="/logo.png" alt="ALATLAS" className="h-10 w-10 object-contain" />
                     <div>
-                        <h1 className="text-xl font-bold text-white tracking-tight">Client Hub</h1>
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Drop Servicing</p>
+                        <h2 className="text-xl font-black text-white italic tracking-tighter">ALATLAS</h2>
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Client Portal</p>
                     </div>
                 </div>
 
@@ -84,8 +82,8 @@ export default function Layout() {
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#11141b]/80 backdrop-blur-lg border-b border-zinc-800 z-50 px-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <LayoutIcon className="h-6 w-6 text-blue-500" />
-                    <span className="font-bold text-white">Client Hub</span>
+                    <img src="/logo.png" alt="ALATLAS" className="h-8 w-8 object-contain" />
+                    <span className="font-bold text-white tracking-tighter italic">ALATLAS</span>
                 </div>
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

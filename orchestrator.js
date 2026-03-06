@@ -153,7 +153,7 @@ class Orchestrator {
     const intervalMinutes = parseInt(process.env.RUN_INTERVAL_MINUTES || '60', 10);
     const intervalMs = intervalMinutes * 60 * 1000;
 
-    console.log(`[Orchestrator] Initializing Drop Servicing Pipeline...`);
+    console.log(`[Orchestrator] Initializing ALATLAS Intelligence Pipeline...`);
     console.log(`[Orchestrator] Configured to run every ${intervalMinutes} minutes.`);
 
     // Run the first pipeline cycle immediately

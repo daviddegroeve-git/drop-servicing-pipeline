@@ -1,7 +1,7 @@
 {
   "name": "drop-servicing-pipeline",
   "version": "1.0.0",
-  "description": "Automated Drop Servicing SaaS pipeline",
+  "description": "ALATLAS Intelligence - Automated SaaS pipeline",
   "main": "orchestrator.js",
   "scripts": {
     "start": "node orchestrator.js",

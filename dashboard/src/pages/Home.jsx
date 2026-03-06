@@ -168,7 +168,7 @@ export default function Home() {
         <div className="space-y-6 pb-10">
             <header>
                 <h1 className="text-3xl font-bold text-zinc-100">Overview</h1>
-                <p className="text-zinc-400 mt-1">Command center for your AI drop servicing empire.</p>
+                <p className="text-zinc-400 mt-1">Command center for your ALATLAS Intelligence empire.</p>
             </header>
 
             {/* Top Row: Metric Cards */}
