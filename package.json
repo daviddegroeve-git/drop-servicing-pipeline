@@ -7,7 +7,7 @@
     "start": "node orchestrator.js",
     "dev": "node --watch orchestrator.js",
     "build": "cd dashboard && npm install && npm run build && cd ../client-dashboard && npm install && npm run build",
-    "vercel-build": "export VITE_SUPABASE_URL=\"$SUPABASE_URL\" && export VITE_SUPABASE_ANON_KEY=\"$SUPABASE_ANON_KEY\" && npm run build && rm -rf public && mkdir public && cp -rv dashboard/dist/* public/ && mkdir -p public/client-dashboard && cp -rv client-dashboard/dist/* public/client-dashboard/"
+    "vercel-build": "export VITE_SUPABASE_URL=\"$SUPABASE_URL\" && export VITE_SUPABASE_ANON_KEY=\"$SUPABASE_ANON_KEY\" && npm run build && rm -rf public && mkdir public && cp -rv dashboard/dist/* public/ && mkdir -p public/client-dashboard && cp -rv client-dashboard/dist/* public/client-dashboard/ && mkdir -p public/marketing && cp -rv marketing-assets/marketing/* public/marketing/"
   },
   "dependencies": {
     "@google/genai": "^1.43.0",
