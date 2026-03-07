@@ -29,7 +29,7 @@ module.exports = async function handler(request, response) {
 
         // 2. Generate a 6-digit PIN string
         const generatedPassword = Math.floor(100000 + Math.random() * 900000).toString();
-        const proxyEmail = `${phone.replace(/\D/g, '')}@client.drop-servicing.local`;
+        const proxyEmail = `${phone.replace(/\D/g, '')}@client.alatlas.local`;
 
         // 3. Initialize Supabase Admin client
         const supabaseAdmin = createClient(
@@ -68,27 +68,19 @@ module.exports = async function handler(request, response) {
             console.log(`[Client-Auth] Created new client user: ${phone}`);
         }
 
-        // 5. Send the password via Ultramsg (Reliable Cloud-to-WhatsApp)
-        const instanceId = process.env.ULTRAMSG_INSTANCE_ID;
-        const token = process.env.ULTRAMSG_TOKEN;
-
-        if (!instanceId || !token) {
-            console.error('[Client-Auth] Missing Ultramsg credentials in environment');
-            return response.status(500).json({ error: 'System configuration error. WhatsApp credentials missing in Vercel.' });
-        }
-
-        const message = `Hello ${lead.name}!\n\nYour temporary password for the ALATLAS Client Dashboard is: *${generatedPassword}*\n\nPlease log in using your phone number to manage your website.`;
+        // 5. Send the password via Local WhatsApp Service
+        const whatsappServiceUrl = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:8080';
+        const message = `Hello ${lead.name}! 💎\n\nYour temporary password for the ALATLAS Client Dashboard is: *${generatedPassword}*\n\nPlease log in using your phone number to manage your website.\n\nPortal: https://drop-servicing-pipeline.vercel.app/client-dashboard`;
 
         try {
-            const waResponse = await axios.post(`https://api.ultramsg.com/${instanceId}/messages/chat`, {
-                token: token,
-                to: phone.startsWith('+') ? phone : `+${phone}`,
-                body: message,
-                priority: 10
+            console.log(`[Client-Auth] Sending password to ${phone} via ${whatsappServiceUrl}`);
+            const waResponse = await axios.post(`${whatsappServiceUrl}/send`, {
+                to: phone,
+                message: message
             });
-            console.log(`[Client-Auth] Sent password via Ultramsg to ${phone}`, waResponse.data);
+            console.log(`[Client-Auth] Sent password via local service to ${phone}`, waResponse.data);
         } catch (waError) {
-            console.error(`[Client-Auth] Ultramsg Error:`, waError.response?.data || waError.message);
+            console.error(`[Client-Auth] WhatsApp Service Error:`, waError.response?.data || waError.message);
             const errorDetail = waError.response?.data?.error || waError.message;
             return response.status(500).json({ error: `WhatsApp Error: ${errorDetail}` });
         }

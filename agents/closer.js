@@ -3,7 +3,7 @@ const axios = require('axios');
 /**
  * Closer Agent
  * Uses the custom local/cloud-run WhatsApp microservice to send messages.
- * Migrated from Ultramsg to prioritize cost-effective local infrastructure.
+ * Enhanced to support Marketing Image + Client Dashboard access details.
  */
 class CloserAgent {
     constructor() {
@@ -14,7 +14,7 @@ class CloserAgent {
         this.api = axios.create({
             baseURL: this.baseURL,
             headers: { 'Content-Type': 'application/json' },
-            timeout: 30000 // 30 second timeout for messaging
+            timeout: 60000 // 60 second timeout for messaging (media can be slow)
         });
 
         console.log(`[Closer] Using Local WhatsApp service at ${this.baseURL}`);
@@ -43,86 +43,92 @@ class CloserAgent {
     async pitchLead(businessName, phone, vercelUrl, db) {
         const formattedPhone = this.formatPhoneNumber(phone);
 
-        // 1. Ensure lead exists in database (Required for dashboard login)
-        // AND Create/Update Supabase Auth User
+        // 1. Ensure lead exists and generate/retrieve PIN
         let registrationData = { pin: '000000' };
         try {
             const authService = require('../services/auth');
             registrationData = await authService.registerLead({ name: businessName, phone: formattedPhone });
-            console.log(`[Closer] Lead ${formattedPhone} registered with PIN: ${registrationData.pin}`);
-
-            const existingLead = await db.getLeadByPhone(formattedPhone);
-            if (!existingLead) {
-                console.log(`[Closer] Database entry missing. Creating manual entry...`);
-                await db.upsertLead({
-                    placeId: `manual-${formattedPhone}`,
-                    name: businessName,
-                    phone: phone,
-                    address: 'Direct Outreach'
-                });
-            }
+            console.log(`[Closer] Lead ${formattedPhone} ready with PIN: ${registrationData.pin}`);
         } catch (dbErr) {
-            console.warn(`[Closer] Registration or DB check failed: ${dbErr.message}. Proceeding with pitch anyway.`);
+            console.warn(`[Closer] Registration failed: ${dbErr.message}.`);
         }
 
-        console.log(`[Closer] Sending pitch for ${businessName} via local service...`);
+        console.log(`[Closer] Sending Enhanced Pitch for ${businessName}...`);
+
+        // Image and Portal details
+        const marketingImageUrl = 'https://drop-servicing-pipeline.vercel.app/marketing/offer.png';
+        const portalUrl = 'https://drop-servicing-pipeline.vercel.app/client-dashboard';
 
         let templates;
         try {
             templates = await db.getSetting('whatsapp_template');
         } catch (e) {
             templates = {
-                en: "Hello {businessName}! 💎 We built a premium preview for your new website: {previewUrl}\n\nManage your site at your ALATLAS Portal: https://drop-servicing-pipeline.vercel.app/client-dashboard\n\nYour temporary password: *{password}*\n(Log in with your phone number)",
-                ar: "مرحباً {businessName}! 💎 لقد قمنا بإنشاء معاينة متميزة لموقعك الإلكتروني الجديد: {previewUrl}\n\nأدر موقعك من خلال بوابة ALATLAS: https://drop-servicing-pipeline.vercel.app/client-dashboard\n\nكلمة المرور المؤقتة الخاصة بك: *{password}*\n(سجل الدخول برقم جوالك)"
+                en: "Hello {businessName}! 💎 We built a premium preview for your new website: {previewUrl}\n\nManage your site at your ALATLAS Portal: {portalUrl}\n\nYour Login Credentials:\nPhone: {phone}\nTemporary Password: *{password}*",
+                ar: "مرحباً {businessName}! 💎 لقد قمنا بإنشاء معاينة متميزة لموقعك الإلكتروني الجديد: {previewUrl}\n\nأدر موقعك من خلال بوابة ALATLAS: {portalUrl}\n\nبيانات تسجيل الدخول الخاصة بك:\nرقم الجوال: {phone}\nكلمة المرور المؤقتة: *{password}*"
             };
         }
 
-        const buildMessage = (template, name, url, pass) => {
+        const buildMessage = (template, name, url, portal, phoneNum, pass) => {
             if (!template) return '';
             return template
                 .replace(/{businessName}/g, name)
                 .replace(/{previewUrl}/g, url)
+                .replace(/{portalUrl}/g, portal)
+                .replace(/{phone}/g, phoneNum)
                 .replace(/{password}/g, pass);
         };
 
-        const msgEn = buildMessage(templates.en, businessName, vercelUrl, registrationData.pin);
-        const msgAr = buildMessage(templates.ar, businessName, vercelUrl, registrationData.pin);
+        const msgEn = buildMessage(
+            registrationData.isNew ? templates.en : (templates.en_returning || "Welcome back {businessName}! 💎 We've updated your premium preview: {previewUrl}\n\nAccess your portal with your new temporary password.\n\nPortal: {portalUrl}\nPhone: {phone}\nNew Password: *{password}*"),
+            businessName, vercelUrl, portalUrl, formattedPhone, registrationData.pin
+        );
+        const msgAr = buildMessage(
+            registrationData.isNew ? templates.ar : (templates.ar_returning || "مرحباً بعودتك {businessName}! 💎 لقد قمنا بتحديث المعاينة المتميزة الخاصة بك: {previewUrl}\n\nيمكنك الوصول إلى البوابة الخاصة بك باستخدام كلمة المرور المؤقتة الجديدة.\n\nالبوابة: {portalUrl}\nرقم الجوال: {phone}\nكلمة المرور الجديدة: *{password}*"),
+            businessName, vercelUrl, portalUrl, formattedPhone, registrationData.pin
+        );
         const messageBody = `${msgEn}\n\n---\n\n${msgAr}`;
 
-        // Send via local/cloud-run service exclusively
         try {
+            // 1. Send Marketing Image FIRST
+            console.log(`[Closer] Step 1: Sending marketing image to ${formattedPhone}...`);
+            await this.sendMedia(formattedPhone, marketingImageUrl, "ALATLAS Intelligence 💎");
+
+            // 2. Send the Access Details message SECOND
+            console.log(`[Closer] Step 2: Sending dashboard details to ${formattedPhone}...`);
             await this.sendMessage(formattedPhone, messageBody);
-            console.log(`[Closer] Pitch successfully sent to ${formattedPhone}`);
+
+            console.log(`[Closer] Enhanced Pitch successfully delivered to ${formattedPhone}`);
             return 'local_sent';
         } catch (err) {
-            console.error(`[Closer] Local outreach failed for ${formattedPhone}: ${err.message}`);
-            throw new Error(`Outreach Failed via Local Microservice: ${err.message}`);
+            console.error(`[Closer] Enhanced outreach failed for ${formattedPhone}: ${err.message}`);
+            throw new Error(`Enhanced Outreach Failed: ${err.message}`);
         }
     }
 
     /**
      * Generic method to send a message via the local WhatsApp service
-     * @param {string} to - The formatted phone number (e.g. 966...)
-     * @param {string} message - The message body
      */
     async sendMessage(to, message) {
         try {
-            const response = await this.api.post('/send', {
-                to: to,
-                message: message
-            });
-
-            if (response.data && response.data.success) {
-                console.log(`[Closer] Local service confirmed message sent to ${to}`);
-                return true;
-            } else {
-                const errMsg = response.data?.error || 'Unknown error from local service';
-                console.error(`[Closer] Local service failed: ${errMsg}`);
-                throw new Error(errMsg);
-            }
+            const response = await this.api.post('/send', { to, message });
+            if (response.data && response.data.success) return true;
+            throw new Error(response.data?.error || 'Unknown error');
         } catch (error) {
-            console.error(`[Closer] Error sending via local service: ${error.message}`);
-            throw error;
+            throw new Error(`Text send failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Generic method to send media via the local WhatsApp service
+     */
+    async sendMedia(to, mediaUrl, caption) {
+        try {
+            const response = await this.api.post('/send-media', { to, mediaUrl, caption });
+            if (response.data && response.data.success) return true;
+            throw new Error(response.data?.error || 'Unknown error');
+        } catch (error) {
+            throw new Error(`Media send failed: ${error.message}`);
         }
     }
 }

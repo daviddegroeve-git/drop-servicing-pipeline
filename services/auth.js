@@ -31,10 +31,23 @@ class AuthService {
     }
 
     /**
+     * Standardizes phone number to international format (e.g., 966...)
+     */
+    formatPhone(phone) {
+        let cleaned = phone.replace(/\D/g, '');
+        if (cleaned.startsWith('05') && cleaned.length === 10) {
+            cleaned = '966' + cleaned.substring(1);
+        } else if (cleaned.length === 9 && !cleaned.startsWith('966')) {
+            cleaned = '966' + cleaned;
+        }
+        return cleaned;
+    }
+
+    /**
      * Creates a proxy email for the user based on their phone number
      */
     getProxyEmail(phone) {
-        const cleanPhone = phone.replace(/\D/g, '');
+        const cleanPhone = this.formatPhone(phone);
         return `${cleanPhone}@client.alatlas.local`;
     }
 
@@ -50,11 +63,11 @@ class AuthService {
         const pin = this.generatePin();
 
         try {
-            // Check if user already exists
-            const { data: users, error: listError } = await this.admin.auth.admin.listUsers();
+            // Check if user already exists using listUsers (with high perPage to avoid missing users)
+            const { data: { users }, error: listError } = await this.admin.auth.admin.listUsers({ perPage: 1000 });
             if (listError) throw listError;
 
-            const existingUser = users.users.find(u => u.email === proxyEmail);
+            const existingUser = users.find(u => u.email === proxyEmail);
 
             if (existingUser) {
                 console.log(`[AuthService] User already exists for ${phone}. Updating password...`);

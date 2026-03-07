@@ -20,11 +20,17 @@ export default function GlobalStatusBar() {
             })
             .subscribe();
 
-        const interval = setInterval(() => setNow(Date.now()), 10000); // 10s counter refresh
+        const pollInterval = setInterval(() => {
+            console.log('[StatusBar] Polling for updates...');
+            fetchInitialState();
+        }, 30000); // 30s polling fallback
+
+        const refreshInterval = setInterval(() => setNow(Date.now()), 2000); // 2s clock refresh for smoother animations
 
         return () => {
             supabase.removeChannel(channel);
-            clearInterval(interval);
+            clearInterval(pollInterval);
+            clearInterval(refreshInterval);
         };
     }, []);
 
@@ -52,7 +58,7 @@ export default function GlobalStatusBar() {
         }
     }
 
-    const defaultAgents = ['orchestrator', 'scout', 'creator', 'retoucher', 'publisher', 'closer'];
+    const defaultAgents = ['orchestrator', 'scout', 'creator', 'retoucher', 'publisher', 'closer', 'chatbot'];
     const uniqueAgents = [...new Set([...defaultAgents, ...Object.keys(agentLastActions)])];
 
     return (

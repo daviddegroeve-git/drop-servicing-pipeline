@@ -4,7 +4,6 @@ import { useAuth } from '../components/AuthContext';
 import { useLanguage } from '../components/LanguageContext';
 import { Navigate } from 'react-router-dom';
 import { Lock, Phone, MessageCircle, Languages } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export default function Login() {
     const { user } = useAuth();
@@ -21,7 +20,7 @@ export default function Login() {
 
     const formatPhoneForEmail = (p) => {
         const digits = p.replace(/\D/g, '');
-        return `${digits}@client.drop-servicing.local`;
+        return `${digits}@client.alatlas.local`;
     };
 
     const handleLogin = async (e) => {

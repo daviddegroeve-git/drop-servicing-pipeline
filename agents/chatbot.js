@@ -52,6 +52,7 @@ class ChatbotAgent {
         try {
             // 1. Classify Intent first
             const intent = await this.classifyIntent(messageText);
+            await db.addLog('chatbot', 'intent_classified', lead.place_id, { intent, message: messageText }, 'info');
 
             // 2. Filter out Auto-Replies
             if (intent === 'BUSINESS_AUTO_REPLY') {
@@ -77,11 +78,13 @@ class ChatbotAgent {
 
             const prompt = `
 System Prompt:
-You are the ALATLAS AI Sales Assistant, representing a premium, automated web development and business intelligence agency. 
+You are the ALATLAS AI Sales Assistant, representing ALATLAS Intelligence—a premium, automated web development and business intelligence agency. 
+
 Your goal is to answer questions from local business owners (like ${lead.name}) who received a cold WhatsApp message with a link to a preview website we built for them.
 The preview website we built for them is currently live at: ${lead.vercel_url}
 The website costs 99 SAR per month, or they can save 198 SAR by paying 990 SAR per year (2 months free). Payment is made via STC Pay to +966 50 791 3514. 
 Once paid, they need to send a screenshot of the receipt here. They can also manage their subscription and site at the ALATLAS Client Dashboard: https://drop-servicing-pipeline.vercel.app/client-dashboard (They login with their WhatsApp number).
+
 Be polite, professional, very concise, and speak in the language they used. If they speak Arabic, reply in Arabic.
 
 Detected Intent: ${intent}
@@ -99,6 +102,8 @@ User's New Message to you:
 Write the response you will send back exactly as it should appear in WhatsApp. Do not include quotes or meta-commentary.
             `;
 
+            await db.addLog('chatbot', 'response_generation_started', lead.place_id, { intent }, 'info');
+
             const response = await this.ai.models.generateContent({
                 model: 'models/gemini-2.5-pro',
                 contents: prompt
@@ -110,10 +115,13 @@ Write the response you will send back exactly as it should appear in WhatsApp. D
             // Send via CloserAgent
             const closer = new CloserAgent();
             await closer.sendMessage(incomingPhone, replyText);
+
+            await db.addLog('chatbot', 'response_sent', lead.place_id, { reply: replyText }, 'success');
             console.log(`[Chatbot] Reply sent to ${incomingPhone}`);
 
         } catch (error) {
             console.error(`[Chatbot] Error handling message: ${error.message}`);
+            await db.addLog('chatbot', 'error', lead.place_id || null, { message: error.message }, 'error');
         }
     }
 }

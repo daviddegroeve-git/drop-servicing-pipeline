@@ -20,6 +20,10 @@ async function startWhatsApp() {
             dataPath: '/tmp/.wwebjs_auth'
         }),
         authTimeoutMs: 180000,
+        webVersionCache: {
+            type: 'remote',
+            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html'
+        },
         puppeteer: {
             headless: true,
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
@@ -33,7 +37,7 @@ async function startWhatsApp() {
                 '--disable-gpu',
                 '--disable-web-security',
                 '--no-default-browser-check',
-                '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
+                '--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
                 '--disable-blink-features=AutomationControlled'
             ]
         }
@@ -211,6 +215,36 @@ async function startWhatsApp() {
         }
     });
 
+    const { MessageMedia } = require('whatsapp-web.js');
+
+    app.post('/send-media', async (req, res) => {
+        if (!isReady) {
+            return res.status(503).json({ error: 'WhatsApp client is not ready' });
+        }
+
+        const { to, mediaUrl, caption } = req.body;
+        if (!to || !mediaUrl) {
+            return res.status(400).json({ error: 'Missing to or mediaUrl parameters' });
+        }
+
+        try {
+            console.log(`[WhatsApp] Fetching media from URL: ${mediaUrl}`);
+            const media = await MessageMedia.fromUrl(mediaUrl);
+
+            let formattedNumber = to.replace(/[^0-9]/g, '');
+            if (!formattedNumber.endsWith('@c.us')) {
+                formattedNumber += '@c.us';
+            }
+
+            await client.sendMessage(formattedNumber, media, { caption: caption });
+            console.log(`[WhatsApp] Media sent successfully to ${to}`);
+            res.json({ success: true, message: 'Media sent!' });
+        } catch (error) {
+            console.error('[WhatsApp] Media send error:', error);
+            res.status(500).json({ error: 'Failed to send media', details: error.message });
+        }
+    });
+
     app.post('/send', async (req, res) => {
         if (!isReady) {
             return res.status(503).json({ error: 'WhatsApp client is not ready' });
@@ -222,8 +256,14 @@ async function startWhatsApp() {
         }
 
         try {
-            // Format phone number required by wwebjs: e.g. "1234567890@c.us"
-            let formattedNumber = to.replace(/[^0-9]/g, '');
+            // Format phone number to international format (e.g. 966...)
+            let formattedNumber = to.replace(/\D/g, '');
+            if (formattedNumber.startsWith('05') && formattedNumber.length === 10) {
+                formattedNumber = '966' + formattedNumber.substring(1);
+            } else if (formattedNumber.length === 9 && !formattedNumber.startsWith('966')) {
+                formattedNumber = '966' + formattedNumber;
+            }
+
             if (!formattedNumber.endsWith('@c.us')) {
                 formattedNumber += '@c.us';
             }
