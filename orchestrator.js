@@ -61,8 +61,9 @@ class Orchestrator {
         await this.db.addLog('scout', 'search_completed', null, { found: leads.length, query }, 'success');
       } else {
         console.log('[Orchestrator] Scouting DISABLED in Promotion Mode (Cost Shield ACTIVE 🛡️)');
-        await this.runWarmingCycle();
+        // Prioritize already-pitched leads (who have a website) to use the 1 week free trial
         await this.runPromotionCycle();
+        await this.runWarmingCycle();
       }
 
       // Step 2: Process intermediate leads (backlog)
@@ -145,11 +146,13 @@ class Orchestrator {
 
   async runWarmingCycle() {
     console.log('[Orchestrator] Running Lead Warming Cycle...');
-    const leads = await this.db.getScoutedLeads(5);
+    const leads = await this.db.getScoutedLeads(15);
     for (const lead of leads) {
       try {
-        await this.closer.warmLead(lead.name, lead.phone);
-        await this.db.addLog('closer', 'warming_sent', lead.place_id, { name: lead.name }, 'success');
+        const success = await this.closer.warmLead(lead.name, lead.phone);
+        if (success) {
+          await this.db.addLog('closer', 'warming_sent', lead.place_id, { name: lead.name }, 'success');
+        }
         await new Promise(r => setTimeout(r, 10000));
       } catch (e) {
         console.error(`[Orchestrator] Warming failed for ${lead.name}:`, e.message);
@@ -159,11 +162,13 @@ class Orchestrator {
 
   async runPromotionCycle() {
     console.log('[Orchestrator] Running 19 SAR Promotion Cycle...');
-    const leads = await this.db.getPitchedLeads(5);
+    const leads = await this.db.getPitchedLeads(15);
     for (const lead of leads) {
       try {
-        await this.closer.sendPromotion(lead.name, lead.phone, lead.vercel_url);
-        await this.db.addLog('closer', 'promo_sent', lead.place_id, { name: lead.name }, 'success');
+        const success = await this.closer.sendPromotion(lead.name, lead.phone, lead.vercel_url);
+        if (success) {
+          await this.db.addLog('closer', 'promo_sent', lead.place_id, { name: lead.name }, 'success');
+        }
         await new Promise(r => setTimeout(r, 10000));
       } catch (e) {
         console.error(`[Orchestrator] Promo failed for ${lead.name}:`, e.message);

@@ -28,12 +28,14 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
 
     // Data states
-    const [stats, setStats] = useState({ scouted: 0, created: 0, published: 0, pitched: 0 });
+    const [stats, setStats] = useState({ scouted: 0, created: 0, published: 0, pitched: 0, completed: 0 });
     const [recentLeads, setRecentLeads] = useState([]);
     const [recentChats, setRecentChats] = useState([]);
     const [pendingAnswers, setPendingAnswers] = useState(0);
     const [recentLogs, setRecentLogs] = useState([]);
     const [mapLeads, setMapLeads] = useState([]);
+    const [engagementStats, setEngagementStats] = useState({ warming: 0, promo: 0 });
+    const [queueSizes, setQueueSizes] = useState({ warming: 0, promotion: 0 });
 
     useEffect(() => {
         fetchAllData();
@@ -66,7 +68,9 @@ export default function Home() {
             fetchStatsAndRecentLeads(),
             fetchRecentChats(),
             fetchPendingAnswers(),
-            fetchRecentLogs()
+            fetchRecentLogs(),
+            fetchEngagementStats(),
+            fetchQueueSizes()
         ]);
         setLoading(false);
     }
@@ -137,6 +141,43 @@ export default function Home() {
         }
     }
 
+    async function fetchEngagementStats() {
+        try {
+            const { count: warming } = await supabase
+                .from('logs')
+                .select('*', { count: 'exact', head: true })
+                .eq('action', 'warming_sent');
+
+            const { count: promo } = await supabase
+                .from('logs')
+                .select('*', { count: 'exact', head: true })
+                .eq('action', 'promo_sent');
+
+            setEngagementStats({ warming: warming || 0, promo: promo || 0 });
+        } catch (e) {
+            console.error('Error fetching engagement stats:', e);
+        }
+    }
+
+    async function fetchQueueSizes() {
+        try {
+            // Warming Queue: Lead status 'scouted' minus those with 'warming_sent' logs
+            const { count: scoutedCount } = await supabase.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'scouted');
+            const { count: warmingLogs } = await supabase.from('logs').select('*', { count: 'exact', head: true }).eq('action', 'warming_sent');
+
+            // Promotion Queue: Lead status 'pitched' minus those with 'promo_sent' logs
+            const { count: pitchedCount } = await supabase.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'pitched');
+            const { count: promoLogs } = await supabase.from('logs').select('*', { count: 'exact', head: true }).eq('action', 'promo_sent');
+
+            setQueueSizes({
+                warming: Math.max(0, (scoutedCount || 0) - (warmingLogs || 0)),
+                promotion: Math.max(0, (pitchedCount || 0) - (promoLogs || 0))
+            });
+        } catch (e) {
+            console.error('Error fetching queue sizes:', e);
+        }
+    }
+
     // Helper formatting
     const getStatusColor = (status) => {
         const colors = {
@@ -172,11 +213,18 @@ export default function Home() {
             </header>
 
             {/* Top Row: Metric Cards */}
+            {/* Main Engagement Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard delay={0.1} title="Total Leads Processed" value={stats.scouted + stats.created + stats.published + stats.pitched + stats.completed} icon={Users} color="bg-blue-500" />
                 <StatCard delay={0.2} title="Websites Ready" value={stats.published + stats.pitched + stats.completed} icon={Globe2} color="bg-purple-500" />
-                <StatCard delay={0.3} title="Pitches Sent" value={stats.pitched + stats.completed} icon={CheckCircle} color="bg-emerald-500" />
-                <StatCard delay={0.4} title="Completed Sales" value={stats.completed} icon={CheckCircle} color="bg-indigo-500" />
+                <StatCard delay={0.3} title="Pitches & Promos" value={stats.pitched + stats.completed + engagementStats.promo} icon={CheckCircle} color="bg-emerald-500" />
+                <StatCard delay={0.4} title="Interest Confirmed" value={engagementStats.warming} icon={Activity} color="bg-amber-500" />
+            </div>
+
+            {/* Pipeline Queues (Backlogs) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <StatCard delay={0.5} title="Warming Queue (Backlog)" value={queueSizes.warming} icon={Clock} color="bg-zinc-500" />
+                <StatCard delay={0.6} title="Promotion Queue (Backlog)" value={queueSizes.promotion} icon={Clock} color="bg-zinc-500" />
             </div>
 
             {/* Bento Grid layout */}

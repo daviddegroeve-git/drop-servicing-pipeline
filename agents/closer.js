@@ -24,17 +24,24 @@ class CloserAgent {
      * Cleans and formats phone numbers to international format (e.g., 966...)
      */
     formatPhoneNumber(rawPhone) {
+        if (!rawPhone) return null;
         let cleaned = rawPhone.replace(/\D/g, '');
 
-        // If it starts with 05 and is 10 digits, it's a local KSA number
+        // If it starts with 05 and is 10 digits, it's a local KSA mobile number
         if (cleaned.startsWith('05') && cleaned.length === 10) {
             cleaned = '966' + cleaned.substring(1);
-        } else if (cleaned.length === 9 && !cleaned.startsWith('966')) {
-            // If it's 9 digits (e.g. 5...), prepend 966
+        } else if (cleaned.length === 9 && (cleaned.startsWith('5'))) {
+            // If it's 9 digits starting with 5, prepend 966
             cleaned = '966' + cleaned;
         }
 
-        return cleaned;
+        // Final check: Saudi mobile numbers must start with 9665 and have 12 digits
+        if (cleaned.startsWith('9665') && cleaned.length === 12) {
+            return cleaned;
+        }
+
+        console.warn(`[Closer] Skipping invalid or landline number: ${rawPhone}`);
+        return null;
     }
 
     /**
@@ -42,6 +49,7 @@ class CloserAgent {
      */
     async pitchLead(businessName, phone, vercelUrl, db) {
         const formattedPhone = this.formatPhoneNumber(phone);
+        if (!formattedPhone) return 'skipped_invalid';
 
         // 1. Ensure lead exists and generate/retrieve PIN
         let registrationData = { pin: '000000' };
@@ -111,6 +119,7 @@ class CloserAgent {
      */
     async warmLead(businessName, phone) {
         const formattedPhone = this.formatPhoneNumber(phone);
+        if (!formattedPhone) return false;
         const message = `Hello ${businessName}! 💎 We are ALATLAS Intelligence. We're currently designing a premium AI-powered website for businesses in your area. 
 
 Would you like to see a custom preview for your business completely for free? Just reply 'YES' and we'll send it over!
@@ -130,6 +139,7 @@ Would you like to see a custom preview for your business completely for free? Ju
      */
     async sendPromotion(businessName, phone, vercelUrl) {
         const formattedPhone = this.formatPhoneNumber(phone);
+        if (!formattedPhone) return false;
         const promoImageUrl = 'https://drop-servicing-pipeline.vercel.app/marketing/promo_19sar.png';
         const portalUrl = 'https://drop-servicing-pipeline.vercel.app/client-dashboard';
 
