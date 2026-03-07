@@ -215,7 +215,16 @@ async function startWhatsApp() {
         }
     });
 
-    const { MessageMedia } = require('whatsapp-web.js');
+    app.get('/health', (req, res) => {
+        const health = {
+            ready: isReady,
+            hasClient: !!client,
+            hasPupPage: !!(client && client.pupPage),
+            qrCodeGenerated: !!qrCodeData
+        };
+        const allOk = isReady && health.hasPupPage;
+        res.status(allOk ? 200 : 503).json(health);
+    });
 
     app.post('/send-media', async (req, res) => {
         if (!isReady) {
@@ -241,6 +250,13 @@ async function startWhatsApp() {
             res.json({ success: true, message: 'Media sent!' });
         } catch (error) {
             console.error('[WhatsApp] Media send error:', error);
+
+            // Critical error recovery
+            if (error.message.includes('reading \'sendMessage\'') || error.message.includes('TypeError')) {
+                console.error('[WhatsApp] CRITICAL ERROR DETECTED. Restarting service...');
+                setTimeout(() => process.exit(1), 1000);
+            }
+
             res.status(500).json({ error: 'Failed to send media', details: error.message });
         }
     });
@@ -273,6 +289,13 @@ async function startWhatsApp() {
             res.json({ success: true, message: 'Message sent!' });
         } catch (error) {
             console.error('[WhatsApp] Send error:', error);
+
+            // Critical error recovery
+            if (error.message.includes('reading \'sendMessage\'') || error.message.includes('TypeError')) {
+                console.error('[WhatsApp] CRITICAL ERROR DETECTED. Restarting service...');
+                setTimeout(() => process.exit(1), 1000);
+            }
+
             res.status(500).json({ error: 'Failed to send message', details: error.message });
         }
     });

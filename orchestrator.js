@@ -18,12 +18,20 @@ class Orchestrator {
     this.closer = new CloserAgent();
     this.biller = new BillerAgent();
     this.db = new DatabaseService();
+    this.isRunning = false;
+    this.axios = require('axios');
   }
 
   /**
    * Executes a single pipeline run
    */
   async runPipeline() {
+    if (this.isRunning) {
+      console.log('[Orchestrator] Cycle already in progress. Skipping.');
+      return;
+    }
+
+    this.isRunning = true;
     const startTime = Date.now();
 
     // Fetch active search queries from the Supabase settings table, 
@@ -56,6 +64,7 @@ class Orchestrator {
       if (leads.length === 0) {
         console.log('[Orchestrator] No viable leads found this cycle. Will wait until next interval.');
         await this.db.addLog('scout', 'search_completed', null, { found: 0, query }, 'warning');
+        this.isRunning = false;
         return;
       }
 
@@ -72,6 +81,7 @@ class Orchestrator {
       if (!activeDbLead) {
         console.log('[Orchestrator] All leads have already been processed or are problematic.');
         await this.db.addLog('orchestrator', 'batch_skipped', null, { reason: 'No viable leads in backlog' }, 'warning');
+        this.isRunning = false;
         return;
       }
 
@@ -101,6 +111,17 @@ class Orchestrator {
 
         // Step 2: Create HTML
         try {
+          // Pre-flight check: Is WhatsApp service healthy?
+          if (activeDbLead.status !== 'pitched') {
+            try {
+              const health = await this.axios.get('http://localhost:8080/health');
+              if (!health.data.ready) throw new Error('WhatsApp not ready');
+            } catch (hErr) {
+              console.log('[Orchestrator] WhatsApp Service NOT READY. Skipping outreach for this lead.');
+              throw new Error(`WhatsApp Health Check Failed: ${hErr.message}`);
+            }
+          }
+
           let currentHtml = activeDbLead.website_html || '';
           let vercelUrl = activeDbLead.vercel_url || '';
 
@@ -131,6 +152,10 @@ class Orchestrator {
             await this.closer.pitchLead(activeLead.name, activeLead.phone, vercelUrl, this.db);
             await this.db.addLog('closer', 'pitch_sent', activeLead.placeId, { url: vercelUrl }, 'success');
             await this.db.updateLeadStatus(activeLead.placeId, 'pitched');
+
+            // 20-second throttle to let WhatsApp rest after sending media
+            console.log('[Orchestrator] Throttling for 20s...');
+            await new Promise(resolve => setTimeout(resolve, 20000));
           }
 
           console.log(`[Orchestrator] Successfully completed pipeline for ${activeLead.name}`);
@@ -151,6 +176,8 @@ class Orchestrator {
     } catch (error) {
       console.error(`[Orchestrator] Pipeline encountered an error and aborted this cycle.`, error.message);
       await this.db.addLog('orchestrator', 'cycle_error', null, { message: error.message }, 'error');
+    } finally {
+      this.isRunning = false;
     }
   }
 
