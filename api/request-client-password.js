@@ -39,33 +39,46 @@ module.exports = async function handler(request, response) {
         );
 
         // 4. Create or Update the user
-        // We first try to get the user by their email
-        const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        // We attempt to create the user first. If they exist, we catch the "already registered" error and update.
+        const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email: proxyEmail,
+            password: generatedPassword,
+            email_confirm: true,
+            user_metadata: { phone: phone, name: lead.name }
+        });
 
-        if (listError) {
-            throw new Error(`Failed to list users: ${listError.message}`);
-        }
+        if (createError) {
+            // Check if the error is due to the user already existing
+            if (createError.message.includes('already been registered') || createError.status === 422) {
+                console.log(`[Client-Auth] User ${proxyEmail} already exists, locating and updating...`);
 
-        const existingUser = users.users.find(u => u.email === proxyEmail);
+                // Find the user ID to update them specifically
+                // Note: listUsers() returns a batch. For better scale, one might loop through pages, 
+                // but for this system, the user is likely in the recent batch or we can filter.
+                const { data: usersData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+                    perPage: 100
+                });
 
-        if (existingUser) {
-            // Update password
-            const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-                existingUser.id,
-                { password: generatedPassword }
-            );
-            if (updateError) throw updateError;
-            console.log(`[Client-Auth] Updated password for existing client: ${phone}`);
+                if (listError) throw listError;
+
+                const existingUser = usersData.users.find(u => u.email === proxyEmail);
+                if (!existingUser) {
+                    throw new Error(`User ${proxyEmail} exists but could not be located in the management list.`);
+                }
+
+                const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+                    existingUser.id,
+                    { password: generatedPassword }
+                );
+
+                if (updateError) throw updateError;
+                console.log(`[Client-Auth] Successfully updated password for: ${phone}`);
+            } else {
+                // If it's a different error, rethrow it
+                throw createError;
+            }
         } else {
-            // Create new auth user
-            const { error: createError } = await supabaseAdmin.auth.admin.createUser({
-                email: proxyEmail,
-                password: generatedPassword,
-                email_confirm: true,
-                user_metadata: { phone: phone, name: lead.name }
-            });
-            if (createError) throw createError;
-            console.log(`[Client-Auth] Created new client user: ${phone}`);
+            console.log(`[Client-Auth] Created new client auth user for: ${phone}`);
         }
 
         // 5. Send the password via Local WhatsApp Service
