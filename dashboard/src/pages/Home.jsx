@@ -38,20 +38,29 @@ export default function Home() {
     const [queueSizes, setQueueSizes] = useState({ warming: 0, promotion: 0 });
 
     useEffect(() => {
-        fetchAllData();
+        fetchAllData(true);
 
         // Subscribe to relevant realtime updates
         const leadsSub = supabase.channel('home_leads')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, fetchAllData)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
+                fetchStatsAndRecentLeads();
+                fetchQueueSizes();
+            })
             .subscribe();
+
         const chatSub = supabase.channel('home_chats')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_logs' }, () => {
                 fetchRecentChats();
                 fetchPendingAnswers();
             })
             .subscribe();
+
         const logsSub = supabase.channel('home_logs')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'logs' }, fetchRecentLogs)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'logs' }, () => {
+                fetchRecentLogs();
+                fetchEngagementStats();
+                fetchQueueSizes();
+            })
             .subscribe();
 
         return () => {
@@ -62,8 +71,8 @@ export default function Home() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    async function fetchAllData() {
-        setLoading(true);
+    async function fetchAllData(showLoading = false) {
+        if (showLoading) setLoading(true);
         await Promise.all([
             fetchStatsAndRecentLeads(),
             fetchRecentChats(),
@@ -72,7 +81,7 @@ export default function Home() {
             fetchEngagementStats(),
             fetchQueueSizes()
         ]);
-        setLoading(false);
+        if (showLoading) setLoading(false);
     }
 
     async function fetchStatsAndRecentLeads() {
@@ -183,8 +192,9 @@ export default function Home() {
     const getStatusColor = (status) => {
         const colors = {
             scouted: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+            warmed: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
             created: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-            published: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+            published: 'bg-sky-500/20 text-sky-400 border-sky-500/30',
             pitched: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
             completed: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
             error: 'bg-red-500/20 text-red-400 border-red-500/30',
@@ -193,7 +203,7 @@ export default function Home() {
     };
 
     const getMarkerColor = (status) => {
-        const colors = { scouted: '#3b82f6', created: '#a855f7', published: '#f59e0b', pitched: '#10b981', completed: '#6366f1' };
+        const colors = { scouted: '#3b82f6', warmed: '#f59e0b', created: '#a855f7', published: '#0ea5e9', pitched: '#10b981', completed: '#6366f1' };
         return colors[status] || '#71717a';
     };
 
@@ -208,10 +218,6 @@ export default function Home() {
 
     return (
         <div className="space-y-6 pb-10">
-            <header>
-                <h1 className="text-3xl font-bold text-zinc-100">Overview</h1>
-                <p className="text-zinc-400 mt-1">Command center for your ALATLAS Intelligence empire.</p>
-            </header>
 
             {/* Top Row: Metric Cards */}
             {/* Main Engagement Stats */}
