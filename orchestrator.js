@@ -157,7 +157,7 @@ class Orchestrator {
       return;
     }
 
-    const leads = await this.db.getScoutedLeads(15);
+    const leads = await this.db.getScoutedLeads(30);
     for (const lead of leads) {
       try {
         const success = await this.closer.warmLead(lead.name, lead.phone);
@@ -165,7 +165,7 @@ class Orchestrator {
           await this.db.addLog('closer', 'warming_sent', lead.place_id, { name: lead.name }, 'success');
           await this.db.updateLeadStatus(lead.place_id, 'warmed');
         }
-        await new Promise(r => setTimeout(r, 10000));
+        await new Promise(r => setTimeout(r, 8000));
       } catch (e) {
         console.error(`[Orchestrator] Warming failed for ${lead.name}:`, e.message);
       }
@@ -185,14 +185,14 @@ class Orchestrator {
       return;
     }
 
-    const leads = await this.db.getPitchedLeads(15);
+    const leads = await this.db.getPitchedLeads(30);
     for (const lead of leads) {
       try {
         const success = await this.closer.sendPromotion(lead.name, lead.phone, lead.vercel_url);
         if (success) {
           await this.db.addLog('closer', 'promo_sent', lead.place_id, { name: lead.name }, 'success');
         }
-        await new Promise(r => setTimeout(r, 10000));
+        await new Promise(r => setTimeout(r, 8000));
       } catch (e) {
         console.error(`[Orchestrator] Promo failed for ${lead.name}:`, e.message);
       }
