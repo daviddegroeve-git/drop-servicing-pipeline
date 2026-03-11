@@ -160,21 +160,26 @@ class RetoucherAgent {
         cleanedHtml = cleanedHtml.replace(/https:\/\/images\.unsplash\.com\/photo-[^"'\s)]+/g, () => getNextImage());
 
         // 4. Programmatic Structural Cleanup
-        // Aggressive header layout enforcement
+        // Remove image logos from headers (user wants clean text only)
+        cleanedHtml = cleanedHtml.replace(/<header[\s\S]*?<a[^>]*class="[^"]*flex items-center[^"]*"[^>]*>([\s\S]*?)<\/a>/g, (match, content) => {
+            // Remove any <img> tags inside the brand link
+            const cleanContent = content.replace(/<img[^>]*>/g, '');
+            return match.replace(content, cleanContent);
+        });
+
+        // Aggressive header layout enforcement & contrast fix
         cleanedHtml = cleanedHtml.replace(/<header class="([^"]*)">/g, (match, classes) => {
-            let cleanClasses = classes.replace(/pr-24|relative/g, '').trim();
-            if (!cleanClasses.includes('flex')) cleanClasses += ' flex';
-            if (!cleanClasses.includes('justify-between')) cleanClasses += ' justify-between';
-            if (!cleanClasses.includes('items-center')) cleanClasses += ' items-center';
-            return `<header class="${cleanClasses} w-full px-4">`;
+            // Force solid dark background and white text for visibility
+            let cleanClasses = classes.replace(/pr-24|relative|bg-gray-900\/80|backdrop-blur-md|text-white|w-full|px-4/g, '').trim();
+            return `<header class="${cleanClasses} sticky top-0 bg-gray-900 text-white w-full px-4 flex justify-between items-center shadow-lg z-50">`;
         });
 
         // Refined Language Switcher Style & Injection
         const enBtn = `<button class="lang-en-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-lg w-full text-center" onclick="document.documentElement.setAttribute('lang', 'en')">English</button>`;
         const arBtn = `<button class="lang-ar-btn bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-lg w-full text-center" onclick="document.documentElement.setAttribute('lang', 'ar')">عربي</button>`;
         
-        const desktopEnBtn = `<button class="lang-en-btn hidden md:inline-block border border-current text-current hover:bg-gray-800 hover:text-white dark:hover:bg-white dark:hover:text-black font-semibold py-2 px-4 rounded-lg transition-all ml-4" onclick="document.documentElement.setAttribute('lang', 'en')">English</button>`;
-        const desktopArBtn = `<button class="lang-ar-btn hidden md:inline-block border border-current text-current hover:bg-gray-800 hover:text-white dark:hover:bg-white dark:hover:text-black font-semibold py-2 px-4 rounded-lg transition-all ml-4" onclick="document.documentElement.setAttribute('lang', 'ar')">عربي</button>`;
+        const desktopEnBtn = `<button class="lang-en-btn hidden md:inline-block border border-white text-white hover:bg-white hover:text-black font-semibold py-2 px-4 rounded-lg transition-all ml-4" onclick="document.documentElement.setAttribute('lang', 'en')">English</button>`;
+        const desktopArBtn = `<button class="lang-ar-btn hidden md:inline-block border border-white text-white hover:bg-white hover:text-black font-semibold py-2 px-4 rounded-lg transition-all ml-4" onclick="document.documentElement.setAttribute('lang', 'ar')">عربي</button>`;
         
         // Remove ALL existing switcher instances
         cleanedHtml = cleanedHtml.replace(/<div class="(?:absolute|fixed) top-4 (?:left|right)-4">[\s\S]*?<\/div>/g, '');

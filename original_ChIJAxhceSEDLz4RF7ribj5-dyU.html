@@ -135,6 +135,33 @@
         }
         #mobile-menu-btn { z-index: 101; position: relative; }
         
+    
+        /* Mobile-only language toggle: show only the other language */
+        @media (max-width: 768px) {
+            html[lang="en"] .lang-en-btn { display: none !important; }
+            html[lang="ar"] .lang-ar-btn { display: none !important; }
+        }
+        .mobile-menu-active { 
+            display: flex !important; 
+            flex-direction: column !important; 
+            align-items: center !important; 
+            justify-content: center !important; 
+            position: fixed !important; 
+            inset: 0 !important; 
+            width: 100% !important; 
+            height: 100vh !important; 
+            background: rgba(17, 24, 39, 0.98) !important; 
+            z-index: 100 !important; 
+        }
+        .mobile-menu-active li, .mobile-menu-active a {
+            margin: 1.5rem 0 !important;
+            font-size: 2.25rem !important; /* text-4xl */
+            font-weight: 700 !important;
+            text-align: center !important;
+            display: block !important;
+        }
+        #mobile-menu-btn { z-index: 101; position: relative; }
+        
     </style>
 </head>
 <body class="font-sans text-gray-800 bg-gray-50">
@@ -164,11 +191,11 @@
     </script>
 
     <!-- Header -->
-    <header class="bg-gray-900/80 backdrop-blur-md text-white shadow-lg sticky top-0 z-50 flex justify-between items-center w-full px-4 w-full px-4">
+    <header class="bg-gray-900/80 backdrop-blur-md text-white shadow-lg sticky top-0 z-50 flex justify-between items-center w-full px-4 w-full px-4 w-full px-4">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <!-- Logo/Brand -->
             <a href="#home" class="flex items-center space-x-2 rtl:space-x-reverse">
-                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop" alt="TOP CROWN SALOON Logo" class="h-10 w-10 rounded-full w-full h-56 object-cover">
+                <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1000&auto=format&fit=crop" alt="TOP CROWN SALOON Logo" class="h-10 w-10 rounded-full w-full h-56 object-cover">
                 <span class="text-2xl font-bold">
                     <span data-lang="en">TOP CROWN SALOON</span>
                     <span data-lang="ar">ابداع قمة التاج للحلاقة</span>
@@ -193,14 +220,13 @@
                     <span data-lang="en">Contact</span>
                     <span data-lang="ar">اتصل بنا</span>
                 </a>
+            <div class="md:hidden mt-12 py-6 border-t border-white/10 flex flex-col gap-4 w-full px-8"><button class="lang-en-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-lg w-full text-center" onclick="document.documentElement.setAttribute('lang', 'en')">English</button><button class="lang-ar-btn bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-lg w-full text-center" onclick="document.documentElement.setAttribute('lang', 'ar')">عربي</button></div>
             </nav>
+            <div class="hidden md:flex items-center space-x-2 rtl:space-x-reverse ml-auto mr-4"></div>
             <div class="hidden md:flex items-center space-x-2 rtl:space-x-reverse ml-auto mr-4"></div>
 
             <!-- Language Switcher & Hamburger Menu for Mobile -->
             <div class="flex items-center space-x-4 md:space-x-6 rtl:space-x-reverse">
-                
-
-                <!-- Hamburger Icon for Mobile -->
                 <div class="md:hidden flex items-center">
                     <input type="checkbox" id="mobile-menu-toggle" class="hidden peer">
                     <label for="mobile-menu-toggle" class="cursor-pointer text-white text-3xl peer-checked:text-primary-light transition-colors duration-200">
@@ -221,16 +247,15 @@
                         <span data-lang="en">Menu</span>
                         <span data-lang="ar">القائمة</span>
                     </span>
+
+                    
                     <label for="mobile-menu-toggle" class="cursor-pointer text-white text-3xl">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </label>
                 </div>
-                <button onclick="toggleLanguage()" class="block py-2 px-3 hover:bg-gray-700 rounded-md transition-colors duration-200">
-                    <span data-lang="en" class="lang-en-btn">عربي</span>
-                    <span data-lang="ar" class="lang-ar-btn">EN</span>
-                </button>
+                
                 <nav class="flex flex-col space-y-4 text-lg">
                     <a href="#home" class="block py-2 px-3 hover:bg-gray-700 rounded-md transition-colors duration-200" onclick="document.getElementById('mobile-menu-toggle').checked = false;">
                         <span data-lang="en">Home</span>
@@ -249,12 +274,16 @@
                         <span data-lang="ar">اتصل بنا</span>
                     </a>
                 </nav>
+
+                <button class="lang-en-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-lg w-full text-center" onclick="toggleLanguage()">English</button>
+                <button class="lang-ar-btn bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg text-lg w-full text-center" onclick="toggleLanguage()">عربي</button>
+
             </div>
         </div>
         <!-- Mobile menu overlay -->
         <label for="mobile-menu-toggle" class="overlay"></label>
-    
-            
+                </svg>
+            </button>
         </header>
                     <line x1="3" y1="12" x2="21" y2="12"></line>
                     <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -264,7 +293,7 @@
         </header>
 
     <!-- Hero Section -->
-    <section id="home" class="hero-background relative h-screen flex items-center justify-center text-center text-white" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1000&auto=format&fit=crop');">
+    <section id="home" class="hero-background relative h-screen flex items-center justify-center text-center text-white" style="background-image: url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=1000&auto=format&fit=crop');">
         <div class="absolute inset-0 bg-black opacity-60"></div>
         <div class="relative z-10 px-4 md:px-8 max-w-3xl">
             <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">
@@ -287,7 +316,7 @@
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex flex-col md:flex-row items-center md:space-x-12 rtl:space-x-reverse">
                 <div class="md:w-1/2 mb-8 md:mb-0">
-                    <img src="https://images.unsplash.com/photo-1556761175-4b46a572b786?q=80&w=1000&auto=format&fit=crop" alt="Interior of TOP CROWN SALOON" class="rounded-lg shadow-xl h-80 w-full object-cover">
+                    <img src="https://images.unsplash.com/photo-1622286342621-4bd786c2447c?q=80&w=1000&auto=format&fit=crop" alt="Interior of TOP CROWN SALOON" class="rounded-lg shadow-xl h-80 w-full h-56 object-cover">
                 </div>
                 <div class="md:w-1/2 text-center md:text-left bg-white/70 backdrop-blur-lg rounded-lg p-4">
                     <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
@@ -318,7 +347,7 @@
 
                 <!-- Service 1: Haircut & Styling -->
                 <div class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                    <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1000&auto=format&fit=crop" alt="Precision Haircut & Styling" class="service-img w-full h-56 object-cover">
+                    <img src="https://images.unsplash.com/photo-1562004760-aceed7bb0fe3?q=80&w=1000&auto=format&fit=crop" alt="Precision Haircut & Styling" class="service-img w-full h-56 object-cover">
                     <div class="p-6">
                         <h3 class="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
                             <span data-lang="en">Precision Haircut & Styling</span>
@@ -337,7 +366,7 @@
 
                 <!-- Service 2: Traditional Shave -->
                 <div class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                    <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=1000&auto=format&fit=crop" alt="Classic Hot Towel Shave" class="service-img w-full h-56 object-cover">
+                    <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1000&auto=format&fit=crop" alt="Classic Hot Towel Shave" class="service-img w-full h-56 object-cover">
                     <div class="p-6">
                         <h3 class="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
                             <span data-lang="en">Classic Hot Towel Shave</span>
@@ -356,7 +385,7 @@
 
                 <!-- Service 3: Beard Grooming -->
                 <div class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                    <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32b7?q=80&w=1000&auto=format&fit=crop" alt="Expert Beard Trim & Shape" class="service-img w-full h-56 object-cover">
+                    <img src="https://images.unsplash.com/photo-1593702275687-f8b402bf1fb5?q=80&w=1000&auto=format&fit=crop" alt="Expert Beard Trim & Shape" class="service-img w-full h-56 object-cover">
                     <div class="p-6">
                         <h3 class="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
                             <span data-lang="en">Expert Beard Trim & Shape</span>
@@ -375,7 +404,7 @@
 
                 <!-- Service 4: Facial & Skincare (Fallback Image) -->
                 <div class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                    <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000&auto=format&fit=crop" alt="Men's Facial & Skincare" class="service-img w-full h-56 object-cover">
+                    <img src="https://images.unsplash.com/photo-1605497788044-5a32c7078486?q=80&w=1000&auto=format&fit=crop" alt="Men's Facial & Skincare" class="service-img w-full h-56 object-cover">
                     <div class="p-6">
                         <h3 class="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
                             <span data-lang="en">Revitalizing Facial & Skincare</span>
@@ -394,7 +423,7 @@
 
                 <!-- Service 5: VIP Grooming Packages (Fallback Image) -->
                 <div class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                    <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1000&auto=format&fit=crop" alt="VIP Grooming Package" class="service-img w-full h-56 object-cover">
+                    <img src="https://images.unsplash.com/photo-1512496015851-a1c84877bc99?q=80&w=1000&auto=format&fit=crop" alt="VIP Grooming Package" class="service-img w-full h-56 object-cover">
                     <div class="p-6">
                         <h3 class="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
                             <span data-lang="en">Exclusive VIP Grooming Packages</span>
@@ -413,7 +442,7 @@
 
                 <!-- Service 6: Hair Coloring & Treatment (Fallback Image) -->
                 <div class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                    <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop" alt="Hair Coloring & Treatment" class="service-img w-full h-56 object-cover">
+                    <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1000&auto=format&fit=crop" alt="Hair Coloring & Treatment" class="service-img w-full h-56 object-cover">
                     <div class="p-6">
                         <h3 class="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
                             <span data-lang="en">Hair Coloring & Treatments</span>
@@ -526,6 +555,7 @@
     </footer>
 
 
+        
         
         <script>
             document.addEventListener('DOMContentLoaded', () => {
