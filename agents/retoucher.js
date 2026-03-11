@@ -202,16 +202,21 @@ class RetoucherAgent {
     </header>
         `;
 
-        // Strip ALL existing headers and mobile nav controls from the start
-        cleanedHtml = cleanedHtml.replace(/<header[^>]*>[\s\S]*?<\/header>/g, '');
-        cleanedHtml = cleanedHtml.replace(/<div class="mobile-nav-menu[\s\S]*?<\/div>\s*<\/div>/g, ''); // Try to catch the sidebar too
-        cleanedHtml = cleanedHtml.replace(/<button id="mobile-menu-btn"[\s\S]*?<\/button>/g, '');
+        // Strip ALL existing headers and mobile nav controls robustly
+        cleanedHtml = cleanedHtml.replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '');
+        cleanedHtml = cleanedHtml.replace(/<div class="mobile-nav-menu[\s\S]*?<\/div>\s*<\/div>/gi, '');
+        cleanedHtml = cleanedHtml.replace(/<button id="mobile-menu-btn"[\s\S]*?<\/button>/gi, '');
+        cleanedHtml = cleanedHtml.replace(/<label for="mobile-menu-toggle"[^>]*>[\s\S]*?<\/label>/gi, '');
+        cleanedHtml = cleanedHtml.replace(/<div class="overlay[^>]*>[\s\S]*?<\/div>/gi, '');
+        
+        // Remove orphand residuals like "s=overlay"
+        cleanedHtml = cleanedHtml.replace(/s="overlay"[^>]*><\/label>/gi, '');
+        cleanedHtml = cleanedHtml.replace(/<button[^>]*mobile-menu-btn[^>]*>[\s\S]*?<\/button>/gi, '');
 
         // Inject our new consolidated header after <body> starts
         cleanedHtml = cleanedHtml.replace(/<body[^>]*>/, (match) => match + '\n' + premiumHeader);
 
-        // Cleanup redundant leftovers from partial replacements
-        cleanedHtml = cleanedHtml.replace(/s="overlay"><\/label>/g, '');
+        // Cleanup double header tags just in case
         cleanedHtml = cleanedHtml.replace(/<\/header>\s*<\/header>/g, '</header>');
 
 

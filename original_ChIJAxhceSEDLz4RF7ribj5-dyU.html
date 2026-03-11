@@ -112,9 +112,71 @@
         
     
         
-</style>
+
+        /* Mobile-only language toggle: show only the other language */
+        @media (max-width: 768px) {
+            html[lang="en"] .lang-en-btn { display: none !important; }
+            html[lang="ar"] .lang-ar-btn { display: none !important; }
+        }
+        .mobile-menu-active { 
+            display: flex !important; 
+            flex-direction: column !important; 
+            align-items: center !important; 
+            justify-content: center !important; 
+            position: fixed !important; 
+            inset: 0 !important; 
+            width: 100% !important; 
+            height: 100vh !important; 
+            background: rgba(17, 24, 39, 0.98) !important; 
+            z-index: 100 !important; 
+        }
+        .mobile-menu-active li, .mobile-menu-active a {
+            margin: 1.5rem 0 !important;
+            font-size: 2.25rem !important; /* text-4xl */
+            font-weight: 700 !important;
+            text-align: center !important;
+            display: block !important;
+        }
+        #mobile-menu-btn { z-index: 101; position: relative; }
+        
+    </style>
 </head>
 <body class="font-sans text-gray-800 bg-gray-50">
+
+    <!-- Header -->
+    <header class="sticky top-0 w-full z-50 bg-black text-white shadow-2xl flex justify-between items-center px-6 py-4">
+        <!-- Logo/Brand -->
+        <a href="#home" class="flex items-center space-x-2 rtl:space-x-reverse">
+            <span class="text-3xl font-extrabold tracking-tight text-white hover:text-primary-light transition-colors">
+                <span data-lang="en">ابداع قمة التاج للحلاقة TOP CROWN SALOON</span>
+                <span data-lang="ar">ابداع قمة التاج للحلاقة TOP CROWN SALOON</span>
+            </span>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav id="desktop-nav" class="hidden md:flex space-x-6 lg:space-x-8 text-lg ml-auto mr-8">
+            <a href="#home" class="hover:text-primary-light transition-colors duration-200"><span data-lang="en">Home</span><span data-lang="ar">الرئيسية</span></a>
+            <a href="#about" class="hover:text-primary-light transition-colors duration-200"><span data-lang="en">About</span><span data-lang="ar">من نحن</span></a>
+            <a href="#services" class="hover:text-primary-light transition-colors duration-200"><span data-lang="en">Services</span><span data-lang="ar">الخدمات</span></a>
+            <a href="#contact" class="hover:text-primary-light transition-colors duration-200"><span data-lang="en">Contact</span><span data-lang="ar">اتصل بنا</span></a>
+        </nav>
+
+        <!-- Dynamic Controls -->
+        <div class="flex items-center space-x-4 md:space-x-6 rtl:space-x-reverse">
+            <button onclick="toggleLanguage()" class="lang-en-btn text-white hover:text-primary-light font-bold hidden md:block">EN</button>
+            <button onclick="toggleLanguage()" class="lang-ar-btn text-white hover:text-primary-light font-bold hidden md:block">عربي</button>
+            
+            <div class="md:hidden flex items-center">
+                <input type="checkbox" id="mobile-menu-toggle" class="hidden peer">
+                <label for="mobile-menu-toggle" class="cursor-pointer text-white text-3xl peer-checked:text-primary-light transition-colors duration-200">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path class="hidden peer-checked:block" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path class="block peer-checked:hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </label>
+            </div>
+        </div>
+    </header>
 
     <!-- Language Toggle Script -->
     <script>
@@ -140,123 +202,16 @@
         }
     </script>
 
-    <!-- Header -->
-    <header class="sticky top-0 w-full z-50 bg-black text-white shadow-2xl flex justify-between items-center px-6 py-4">
-            <!-- Logo/Brand -->
-            <a href="#home" class="flex items-center space-x-2 rtl:space-x-reverse">
-                
-                <span class="text-3xl font-extrabold tracking-tight text-white hover:text-primary-light transition-colors">
-                    <span data-lang="en">TOP CROWN SALOON</span>
-                    <span data-lang="ar">ابداع قمة التاج للحلاقة</span>
-                </span>
-            </a>
-
-            <!-- Desktop Navigation -->
-            <nav id="mobile-menu" class="hidden md:flex space-x-6 lg:space-x-8 text-lg">
-                <a href="#home" class="hover:text-primary-light transition-colors duration-200">
-                    <span data-lang="en">Home</span>
-                    <span data-lang="ar">الرئيسية</span>
-                </a>
-                <a href="#about" class="hover:text-primary-light transition-colors duration-200">
-                    <span data-lang="en">About Us</span>
-                    <span data-lang="ar">من نحن</span>
-                </a>
-                <a href="#services" class="hover:text-primary-light transition-colors duration-200">
-                    <span data-lang="en">Services</span>
-                    <span data-lang="ar">الخدمات</span>
-                </a>
-                <a href="#contact" class="hover:text-primary-light transition-colors duration-200">
-                    <span data-lang="en">Contact</span>
-                    <span data-lang="ar">اتصل بنا</span>
-                </a>
-            </nav>
-            
-
-            <!-- Language Switcher & Hamburger Menu for Mobile -->
-            <div class="flex items-center space-x-4 md:space-x-6 rtl:space-x-reverse">
-                <button onclick="toggleLanguage()" class="lang-en-btn text-white hover:text-primary-light transition-colors duration-200 hidden md:block">
-                    EN
-                </button>
-                <button onclick="toggleLanguage()" class="lang-ar-btn text-white hover:text-primary-light transition-colors duration-200 hidden md:block">
-                    عربي
-                </button>
-                
-                <div class="md:hidden flex items-center">
-                    <input type="checkbox" id="mobile-menu-toggle" class="hidden peer">
-                    <label for="mobile-menu-toggle" id="mobile-menu-btn" class="cursor-pointer text-white text-3xl peer-checked:text-primary-light transition-colors duration-200">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path class="hidden peer-checked:block" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            <path class="block peer-checked:hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </label>
-                </div>
-            </div>
-    </header>
-
         <!-- Mobile Navigation (Hidden by default, slides in) -->
-        <div class="mobile-nav-menu fixed top-0 h-full w-64 bg-gray-800 text-white shadow-xl z-50 md:hidden peer-checked:transform-none peer-checked:opacity-100" dir="ltr">
-            <div class="py-6 px-6">
-                <div class="flex justify-between items-center mb-8">
-                    <span class="text-xl font-bold">
-                        <span data-lang="en">Menu</span>
-                        <span data-lang="ar">القائمة</span>
-                    </span>
-
-                    
-                    <label for="mobile-menu-toggle" id="mobile-menu-close" class="cursor-pointer text-white text-3xl">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </label>
-                </div>
-                <div class="flex flex-col gap-4 w-full px-8">
-                    <button onclick="toggleLanguage()" class="lang-en-btn text-white hover:text-primary-light transition-colors duration-200">
-                        EN
-                    </button>
-                    <button onclick="toggleLanguage()" class="lang-ar-btn text-white hover:text-primary-light transition-colors duration-200">
-                        عربي
-                    </button>
-                </div>
-                <nav class="flex flex-col space-y-4 text-lg">
-                    <a href="#home" class="block py-2 px-3 hover:bg-gray-700 rounded-md transition-colors duration-200" onclick="document.getElementById('mobile-menu-toggle').checked = false;"ment.getElementById('mobile-menu-toggle').checked = false;">
-                        <span data-lang="en">Home</span>
-                        <span data-lang="ar">الرئيسية</span>
-                    </a>
-                    <a href="#about" class="block py-2 px-3 hover:bg-gray-700 rounded-md transition-colors duration-200" onclick="document.getElementById('mobile-menu-toggle').checked = false;"ment.getElementById('mobile-menu-toggle').checked = false;">
-                        <span data-lang="en">About Us</span>
-                        <span data-lang="ar">من نحن</span>
-                    </a>
-                    <a href="#services" class="block py-2 px-3 hover:bg-gray-700 rounded-md transition-colors duration-200" onclick="document.getElementById('mobile-menu-toggle').checked = false;"ment.getElementById('mobile-menu-toggle').checked = false;">
-                        <span data-lang="en">Services</span>
-                        <span data-lang="ar">الخدمات</span>
-                    </a>
-                    <a href="#contact" class="block py-2 px-3 hover:bg-gray-700 rounded-md transition-colors duration-200" onclick="document.getElementById('mobile-menu-toggle').checked = false;"ment.getElementById('mobile-menu-toggle').checked = false;">
-                        <span data-lang="en">Contact</span>
-                        <span data-lang="ar">اتصل بنا</span>
-                    </a>
-                </nav>
-                
-                <div class="mt-auto pt-6 border-t border-gray-700">
-                    
-                    
-                </div>
-                
-
-            </div>
+        
         </div>
         <!-- Mobile menu overlay -->
         <div class="overlay md:hidden"></div>
-        s="overlay"></label>
+        
                 </svg>
             </button>
         
-            <button id="mobile-menu-btn" class="block md:hidden text-white focus:outline-none transition-transform active:scale-95">
-                <svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-            </button>
+            
         </header>
 
     <!-- Hero Section -->
@@ -285,7 +240,7 @@
                 <div class="md:w-1/2 mb-8 md:mb-0">
                     <img src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=1000&auto=format&fit=crop" alt="Interior of TOP CROWN SALOON" class="rounded-lg shadow-xl h-80 w-full h-56 object-cover">
                 </div>
-                <div class="md:w-1/2 text-center md:text-left bg-white/70 backdrop-blur-lg rounded-lg p-4">
+                <div class="md:w-1/2 text-center md:text-left bg-gray-900/70 backdrop-blur-lg rounded-lg p-4">
                     <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
                         <span data-lang="en">About TOP CROWN SALOON</span>
                         <span data-lang="ar">عن ابداع قمة التاج للحلاقة</span>
@@ -324,7 +279,7 @@
                             <span data-lang="en">Our expert barbers deliver contemporary and classic haircuts tailored to your personal style. Includes a wash, cut, and professional styling.</span>
                             <span data-lang="ar">يقدم حلاقونا الخبراء قصات شعر عصرية وكلاسيكية مصممة خصيصًا لأسلوبك الشخصي. تشمل الخدمة غسيل الشعر، قصه، وتصفيف احترافي.</span>
                         </p>
-                        <a href="#contact" class="text-primary-600 hover:text-primary-800 font-medium transition-colors duration-200">
+                        <a href="#contact" class="text-primary-500 hover:text-primary-light font-medium transition-colors duration-200">
                             <span data-lang="en">Learn More & Book</span>
                             <span data-lang="ar">اعرف المزيد واحجز</span>
                         </a>
@@ -522,6 +477,7 @@
     </footer>
 
 
+        
         
         
         
