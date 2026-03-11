@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOP CROWN SALOON | ابداع قمة التاج للحلاقة</title>
+    <meta name="description" content="Experience premium grooming at TOP CROWN SALOON in Riyadh. Haircuts, beard trims, shaves, and facial treatments for the modern man.">
+    <meta name="keywords" content="barber, barbershop, Riyadh, Saudi Arabia, haircut, beard trim, shave, grooming, facial, salon, mens salon, Top Crown Saloon, حلاقة, صالون, الرياض, السعودية, قص شعر, لحية, عناية بالبشرة">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS for bilingual support */
+        html[lang="en"] [data-lang="ar"] { display: none; }
+        html[lang="ar"] [data-lang="en"] { display: none; }
+        html[lang="ar"] { direction: rtl; }
+
+        /* Smooth scrolling for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        .hero-background {
+            background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Responsive Navbar for smaller screens */
+        @media (max-width: 768px) {
+            .navbar-menu {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                background-color: #1a202c; /* Dark background */
+                position: absolute;
+                top: 64px; /* Below the header */
+                left: 0;
+                padding: 1rem 0;
+                z-index: 1000;
+            }
+            .navbar-menu.active {
+                display: flex;
+            }
+            .navbar-menu a {
+                padding: 0.75rem 1.5rem;
+                text-align: center;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .navbar-menu a:last-child {
+                border-bottom: none;
+            }
+            .hamburger {
+                display: block;
+            }
+        }
+        @media (min-width: 769px) {
+            .navbar-menu {
+                display: flex !important; /* Ensure it's visible on larger screens */
+            }
+            .hamburger {
+                display: none;
+            }
+        }
+    
+        
+        @media (max-width: 768px) {
+            html[lang="en"] .lang-en-btn { display: none !important; }
+            html[lang="ar"] .lang-ar-btn { display: none !important; }
+        }
+        .mobile-menu-active { 
+            display: flex !important; 
+            flex-direction: column !important; 
+            align-items: center !important; 
+            justify-content: center !important; 
+            position: fixed !important; 
+            inset: 0 !important; 
+            width: 100% !important; 
+            height: 100vh !important; 
+            background: rgba(17, 24, 39, 0.98) !important; 
+            z-index: 100 !important; 
+        }
+        .mobile-menu-active li, .mobile-menu-active a {
+            margin: 1.5rem 0 !important;
+            font-size: 2.25rem !important; /* text-4xl */
+            font-weight: 700 !important;
+            text-align: center !important;
+            display: block !important;
+        }
+        #mobile-menu-btn { z-index: 101; position: relative; }
+        
+    
+        
+
+        .mobile-menu-active { 
+            display: flex !important; 
+            flex-direction: column !important; 
+            align-items: center !important; 
+            justify-content: center !important; 
+            position: fixed !important; 
+            inset: 0 !important; 
+            width: 100% !important; 
+            height: 100vh !important; 
+            background: rgba(17, 24, 39, 0.98) !important; 
+            z-index: 100 !important; 
+        }
+        .mobile-menu-active li, .mobile-menu-active a {
+            margin: 1.5rem 0 !important;
+            font-size: 2.25rem !important; /* text-4xl */
+            font-weight: 700 !important;
+            text-align: center !important;
+            display: block !important;
+        }
+        #mobile-menu-btn { z-index: 101; position: relative; }
+        
+    
+        /* Mobile-only language toggle: show only the other language */
+        @media (max-width: 768px) {
+            html[lang="en"] .lang-en-btn { display: none !important; }
+            html[lang="ar"] .lang-ar-btn { display: none !important; }
+        }
+        .mobile-menu-active { 
+            display: flex !important; 
+            flex-direction: column !important; 
+            align-items: center !important; 
+            justify-content: center !important; 
+            position: fixed !important; 
+            inset: 0 !important; 
+            width: 100% !important; 
+            height: 100vh !important; 
+            background: rgba(17, 24, 39, 0.98) !important; 
+            z-index: 100 !important; 
+        }
+        .mobile-menu-active li, .mobile-menu-active a {
+            margin: 1.5rem 0 !important;
+            font-size: 2.25rem !important; /* text-4xl */
+            font-weight: 700 !important;
+            text-align: center !important;
+            display: block !important;
+        }
+        #mobile-menu-btn { z-index: 101; position: relative; }
+        
+    </style>
+</head>
+<body class="font-sans bg-gray-900 text-gray-100">
+
+    <!-- Language Toggle Script -->
+    <script>
+        function toggleLanguage() {
+            const html = document.documentElement;
+            if (html.lang === 'en') {
+                html.lang = 'ar';
+                html.setAttribute('dir', 'rtl');
+            } else {
+                html.lang = 'en';
+                html.setAttribute('dir', 'ltr');
+            }
+        }
+
+        // Set initial direction based on lang attribute
+        document.addEventListener('DOMContentLoaded', () => {
+            const html = document.documentElement;
+            if (html.lang === 'ar') {
+                html.setAttribute('dir', 'rtl');
+            } else {
+                html.setAttribute('dir', 'ltr');
+            }
+        });
+    </script>
+
+    <!-- Header / Navigation -->
+    <header class="sticky top-0 backdrop-blur-md bg-gray-900/80 text-white p-4 shadow-lg z-50 flex justify-between items-center w-full px-4">
+        <a href="#" onclick="toggleLanguage()" class="md:hidden bg-yellow-500 text-gray-900 px-4 py-2 rounded-md hover:bg-yellow-600 transition-colors mt-4 md:mt-0">
+            <span data-lang="en">العربية</span>
+            <span data-lang="ar">English</span>
+        </a>
+
+
+        <nav id="mobile-menu" class="container mx-auto flex items-center flex-wrap">
+            <a href="#" onclick="toggleLanguage()" class="md:hidden bg-yellow-500 text-gray-900 px-4 py-2 rounded-md hover:bg-yellow-600 transition-colors mt-4 md:mt-0">
+                <span data-lang="en">العربية</span>
+                <span data-lang="ar">English</span>
+            </a>
+
+            <button class="hamburger md:hidden text-white focus:outline-none" aria-label="Toggle navigation" onclick="document.querySelector('.navbar-menu').classList.toggle('active')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+
+            <div class="navbar-menu md:flex md:space-x-8 text-lg md:items-center">
+                <a href="#hero" class="block py-2 hover:text-yellow-500 transition-colors">
+                    <span data-lang="en">Home</span>
+                    <span data-lang="ar">الرئيسية</span>
+                </a>
+                <a href="#about" class="block py-2 hover:text-yellow-500 transition-colors">
+                    <span data-lang="en">About Us</span>
+                    <span data-lang="ar">عنّا</span>
+                </a>
+                <a href="#services" class="block py-2 hover:text-yellow-500 transition-colors">
+                    <span data-lang="en">Services</span>
+                    <span data-lang="ar">خدماتنا</span>
+                </a>
+                <a href="#contact" class="block py-2 hover:text-yellow-500 transition-colors">
+                    <span data-lang="en">Contact</span>
+                    <span data-lang="ar">اتصل بنا</span>
+                </a>
+                <button onclick="toggleLanguage()" class="bg-yellow-500 text-gray-900 px-4 py-2 rounded-md hover:bg-yellow-600 transition-colors mt-4 md:mt-0">
+                    <span data-lang="en">العربية</span>
+                    <span data-lang="ar">English</span>
+                </button>
+            </div>
+
+            </nav>
+            <div class="md:flex items-center space-x-2 rtl:space-x-reverse ml-auto">
+                <a href="#" onclick="toggleLanguage()" class="lang-en-btn bg-yellow-500 text-gray-900 px-4 py-2 rounded-md hover:bg-yellow-600 transition-colors mt-4 md:mt-0">
+                    <span data-lang="en">العربية</span>
+                    <span data-lang="ar">English</span>
+                </a>
+            </div>
+    
+            <button id="mobile-menu-btn" class="block md:hidden text-white focus:outline-none transition-transform active:scale-95">
+                <svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </header>
+
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero-background relative h-screen flex items-center justify-center text-center text-white">
+        <div class="absolute inset-0 bg-black opacity-60"></div>
+        <div class="relative z-10 p-6 max-w-4xl mx-auto">
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-4 text-yellow-500 drop-shadow-lg">
+                <span data-lang="en">TOP CROWN SALOON</span>
+                <span data-lang="ar">ابداع قمة التاج للحلاقة</span>
+            </h1>
+            <p class="text-lg md:text-2xl mb-8 leading-relaxed">
+                <span data-lang="en">Where classic grooming meets modern style. Experience the pinnacle of men's care in Riyadh.</span>
+                <span data-lang="ar">حيث يلتقي الجمال الكلاسيكي بالأناقة العصرية. اختبر قمة العناية بالرجال في الرياض.</span>
+            </p>
+            <a href="#services" class="bg-yellow-500 text-gray-900 font-semibold px-8 py-4 rounded-full text-xl hover:bg-yellow-600 transition-transform transform hover:scale-105 shadow-xl">
+                <span data-lang="en">Discover Our Services</span>
+                <span data-lang="ar">اكتشف خدماتنا</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 bg-gray-950">
+        <div class="container mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center gap-12">
+            <div class="md:w-1/2">
+                <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1000&auto=format&fit=crop" alt="Interior of TOP CROWN SALOON" class="rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-300 backdrop-blur-lg bg-gray-900/70 w-full h-56 object-cover">
+            </div>
+            <div class="md:w-1/2 text-center md:text-left">
+                <h2 class="text-4xl font-bold text-yellow-500 mb-6">
+                    <span data-lang="en">About TOP CROWN SALOON</span>
+                    <span data-lang="ar">عن ابداع قمة التاج للحلاقة</span>
+                </h2>
+                <p class="text-lg leading-relaxed mb-4">
+                    <span data-lang="en">
+                        Located in the heart of Riyadh, TOP CROWN SALOON is more than just a barbershop – it's an experience. We pride ourselves on delivering exceptional grooming services, blending traditional techniques with contemporary styles. Our skilled barbers are dedicated to providing personalized care, ensuring every client leaves feeling refreshed, confident, and perfectly groomed.
+                    </span>
+                    <span data-lang="ar">
+                        يقع صالون ابداع قمة التاج للحلاقة في قلب الرياض، وهو أكثر من مجرد صالون حلاقة – إنه تجربة فريدة. نفخر بتقديم خدمات عناية استثنائية، تجمع بين التقنيات التقليدية والأنماط العصرية. حلاقونا المهرة ملتزمون بتقديم عناية شخصية، لضمان أن يغادر كل عميل شعوراً بالانتعاش والثقة والمظهر الأنيق.
+                    </span>
+                </p>
+                <p class="text-lg leading-relaxed">
+                    <span data-lang="en">
+                        We use only the finest products and maintain a serene, comfortable atmosphere, making each visit a true escape. Discover your best look with us.
+                    </span>
+                    <span data-lang="ar">
+                        نستخدم أجود المنتجات فقط ونحافظ على أجواء هادئة ومريحة، مما يجعل كل زيارة بمثابة هروب حقيقي من الروتين. اكتشف أفضل مظهر لك معنا.
+                    </span>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-16 bg-gray-800">
+        <div class="container mx-auto px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-yellow-500 text-center mb-12">
+                <span data-lang="en">Our Premium Services</span>
+                <span data-lang="ar">خدماتنا المميزة</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                
+                <!-- Service 1: Haircuts & Styling -->
+                <div class="backdrop-blur-lg bg-gray-900/70 rounded-lg shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                    <img src="https://images.unsplash.com/photo-1556761175-4b46a572b786?q=80&w=1000&auto=format&fit=crop" alt="Haircut and Styling" class="h-64 w-full h-56 object-cover">
+                    <div class="p-6 text-center">
+                        <h3 class="text-2xl font-bold text-yellow-500 mb-3">
+                            <span data-lang="en">Haircuts & Styling</span>
+                            <span data-lang="ar">قصات الشعر وتصفيفه</span>
+                        </h3>
+                        <p class="text-gray-300 leading-relaxed">
+                            <span data-lang="en">
+                                From classic cuts to the latest trends, our expert barbers craft the perfect look for you. We provide personalized consultations to ensure your style reflects your personality and preferences.
+                            </span>
+                            <span data-lang="ar">
+                                من القصات الكلاسيكية إلى أحدث الصيحات، يقوم حلاقونا الخبراء بصنع المظهر المثالي لك. نقدم استشارات شخصية لضمان أن يعكس أسلوبك شخصيتك وتفضيلاتك.
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Service 2: Beard Care & Shaving -->
+                <div class="backdrop-blur-lg bg-gray-900/70 rounded-lg shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                    <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1000&auto=format&fit=crop" alt="Beard trimming and Shaving" class="h-64 w-full h-56 object-cover">
+                    <div class="p-6 text-center">
+                        <h3 class="text-2xl font-bold text-yellow-500 mb-3">
+                            <span data-lang="en">Beard Care & Shaving</span>
+                            <span data-lang="ar">العناية باللحية والحلاقة</span>
+                        </h3>
+                        <p class="text-gray-300 leading-relaxed">
+                            <span data-lang="en">
+                                Masterful beard trims, precise shaping, and luxurious hot towel shaves. Experience ultimate comfort and sharpness with our dedicated beard services.
+                            </span>
+                            <span data-lang="ar">
+                                تشذيب اللحية ببراعة، تحديد دقيق، وحلاقة فاخرة بالمنشفة الساخنة. اختبر أقصى درجات الراحة والدقة مع خدماتنا المخصصة للعناية باللحية.
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Service 3: Facial & Hair Treatments -->
+                <div class="backdrop-blur-lg bg-gray-900/70 rounded-lg shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                    <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=1000&auto=format&fit=crop" alt="Facial and Hair Treatments" class="h-64 w-full h-56 object-cover">
+                    <div class="p-6 text-center">
+                        <h3 class="text-2xl font-bold text-yellow-500 mb-3">
+                            <span data-lang="en">Facial & Hair Treatments</span>
+                            <span data-lang="ar">العناية بالوجه والشعر</span>
+                        </h3>
+                        <p class="text-gray-300 leading-relaxed">
+                            <span data-lang="en">
+                                Rejuvenate your skin with our refreshing facial treatments and nourish your hair with specialized conditioning and scalp therapies designed for men.
+                            </span>
+                            <span data-lang="ar">
+                                جدد بشرتك مع علاجات الوجه المنعشة لدينا وغذِ شعرك بعلاجات الترطيب وفروة الرأس المتخصصة المصممة للرجال.
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-16 bg-gray-950">
+        <div class="container mx-auto px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold text-yellow-500 mb-12">
+                <span data-lang="en">What Our Clients Say</span>
+                <span data-lang="ar">ماذا يقول عملاؤنا</span>
+            </h2>
+            <div class="bg-gray-900 p-8 rounded-lg shadow-xl max-w-2xl mx-auto">
+                <p class="text-xl italic text-gray-300 mb-4">
+                    <span data-lang="en">"Currently, we don't have recent customer reviews available to display here. We look forward to receiving your feedback after your visit!"</span>
+                    <span data-lang="ar">"حالياً، لا توجد لدينا مراجعات حديثة من العملاء لعرضها هنا. نتطلع إلى تلقي ملاحظاتكم بعد زيارتكم لنا!"</span>
+                </p>
+                <div class="text-yellow-500 text-3xl mb-4">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                </div>
+                <p class="text-gray-400 font-semibold">
+                    <span data-lang="en">TOP CROWN SALOON Team</span>
+                    <span data-lang="ar">فريق ابداع قمة التاج للحلاقة</span>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-gray-800">
+        <div class="container mx-auto px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold text-yellow-500 mb-12">
+                <span data-lang="en">Visit Us or Get in Touch</span>
+                <span data-lang="ar">زورونا أو تواصلوا معنا</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+                <!-- Contact Info -->
+                <div class="bg-gray-900 p-8 rounded-lg shadow-xl text-center md:text-left">
+                    <h3 class="text-2xl font-bold text-white mb-6">
+                        <span data-lang="en">Contact Details</span>
+                        <span data-lang="ar">تفاصيل الاتصال</span>
+                    </h3>
+                    <p class="text-lg text-gray-300 mb-4 flex items-center justify-center md:justify-start">
+                        <svg class="w-6 h-6 mr-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                        <span data-lang="en">Phone: </span><span data-lang="ar">الهاتف: </span> <a href="tel:+966534057016" class="hover:text-yellow-500 transition-colors">053 405 7016</a>
+                    </p>
+                    <p class="text-lg text-gray-300 mb-4 flex items-center justify-center md:justify-start">
+                        <svg class="w-6 h-6 mr-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span data-lang="en">Address: </span><span data-lang="ar">العنوان: </span> 6951 عبدالله بن سلمان الحمدان، As Sulimaniyah, Riyadh 00000, Saudi Arabia
+                    </p>
+                    <p class="text-lg text-gray-300 mb-4 flex items-center justify-center md:justify-start">
+                        <svg class="w-6 h-6 mr-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span data-lang="en">Business Hours: </span><span data-lang="ar">ساعات العمل: </span> <span data-lang="en">Daily, 10:00 AM - 11:00 PM</span><span data-lang="ar">يوميًا، 10:00 صباحًا - 11:00 مساءً</span>
+                    </p>
+                    <a href="https://www.google.com/maps/search/6951+%D8%B9%D8%A8%D8%AF%D8%A7%D9%84%D9%84%D9%87+%D8%A8%D9%86+%D8%B3%D9%84%D9%85%D8%A7%D9%86+%D8%A7%D9%84%D8%AD%D9%85%D8%AF%D8%A7%D9%86%D8%8C+As+Sulimaniyah,+Riyadh+00000,+Saudi+Arabia" target="_blank" class="inline-block bg-yellow-500 text-gray-900 font-semibold px-6 py-3 mt-4 rounded-full hover:bg-yellow-600 transition-colors transform hover:scale-105 shadow-md">
+                        <span data-lang="en">Get Directions</span>
+                        <span data-lang="ar">احصل على الاتجاهات</span>
+                    </a>
+                </div>
+
+                <!-- Google Map -->
+                <div class="bg-gray-900 p-2 rounded-lg shadow-xl">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3623.155498877028!2d46.721461975005885!3d24.717621455246237!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e2f03fc76e0339f%3A0x6b72a08a2a0a2a0a!2sTOP%20CROWN%20SALOON!5e0!3m2!1sen!2ssa!4v1700000000000!5m2!1sen!2ssa" 
+                        width="100%" 
+                        height="450" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade"
+                        class="rounded-lg">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 text-gray-400 py-8">
+        <div class="container mx-auto px-6 lg:px-8 text-center">
+            <p class="mb-4">
+                <span data-lang="en">&copy; 2023 TOP CROWN SALOON. All rights reserved.</span>
+                <span data-lang="ar">&copy; 2023 ابداع قمة التاج للحلاقة. جميع الحقوق محفوظة.</span>
+            </p>
+            <div class="flex justify-center space-x-6 text-xl">
+                <a href="#hero" class="hover:text-yellow-500 transition-colors">
+                    <span data-lang="en">Home</span>
+                    <span data-lang="ar">الرئيسية</span>
+                </a>
+                <a href="#about" class="hover:text-yellow-500 transition-colors">
+                    <span data-lang="en">About</span>
+                    <span data-lang="ar">عنّا</span>
+                </a>
+                <a href="#services" class="hover:text-yellow-500 transition-colors">
+                    <span data-lang="en">Services</span>
+                    <span data-lang="ar">خدماتنا</span>
+                </a>
+                <a href="#contact" class="hover:text-yellow-500 transition-colors">
+                    <span data-lang="en">Contact</span>
+                    <span data-lang="ar">اتصل بنا</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+        
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const menuBtn = document.getElementById('mobile-menu-btn');
+                const menu = document.getElementById('mobile-menu');
+                if (menuBtn && menu) {
+                    const toggleMenu = () => {
+                        menu.classList.toggle('hidden');
+                        menu.classList.toggle('mobile-menu-active');
+                        document.body.style.overflow = menu.classList.contains('mobile-menu-active') ? 'hidden' : '';
+                    };
+                    menuBtn.addEventListener('click', toggleMenu);
+                    // Close menu when a link is clicked
+                    menu.querySelectorAll('a').forEach(link => {
+                        link.addEventListener('click', () => {
+                            if (menu.classList.contains('mobile-menu-active')) {
+                                toggleMenu();
+                            }
+                        });
+                    });
+                }
+            });
+        </script>
+        
+</body>
+</html>

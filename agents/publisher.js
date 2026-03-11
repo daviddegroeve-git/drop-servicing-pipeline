@@ -162,6 +162,24 @@ class PublisherAgent {
           right: auto;
           left: -10px;
         }
+        .free-preview-btn {
+          display: block;
+          margin-top: 0.75rem;
+          background: transparent;
+          color: #4b5563;
+          border: 1px solid #d1d5db;
+          padding: 0.75rem 1.5rem;
+          font-weight: 600;
+          font-size: 1rem;
+          border-radius: 0.5rem;
+          cursor: pointer;
+          transition: background 0.2s, color 0.2s;
+          width: 100%;
+        }
+        .free-preview-btn:hover {
+          background: #f3f4f6;
+          color: #111827;
+        }
       </style>
       
       <div id="publisher-modal-overlay">
@@ -241,15 +259,20 @@ class PublisherAgent {
           </div>
 
           <a id="whatsapp-btn" href="#" target="_blank" class="publisher-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding-left: 0; padding-right: 0; box-sizing: border-box;">
-            <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="..." /></svg>
+            <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.489-1.761-1.663-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.012c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
             <span class="mod-lang-en" id="cta-text-en">Get Yearly - 990 SAR</span>
             <span class="mod-lang-ar" id="cta-text-ar">اشترك سنوياً - 990 ريال</span>
           </a>
           
+          <button id="free-preview-btn" class="free-preview-btn" onclick="startFreePreview()">
+            <span class="mod-lang-en">Free 1-Hour Preview</span>
+            <span class="mod-lang-ar">معاينة مجانية لمدة ساعة</span>
+          </button>
+          
           <p style="color: #9ca3af; font-size: 0.75rem; margin-top: 1rem; text-align: center;">
             <svg style="width: 12px; height: 12px; display: inline; vertical-align: middle; margin-right: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span class="mod-lang-en">Your live preview will be available again in 1 hour.</span>
-            <span class="mod-lang-ar">ستكون معاينتك المباشرة متاحة مرة أخرى بعد ساعة واحدة.</span>
+            <span class="mod-lang-en" id="footer-text-en">You can use your 1-hour free preview once a day.</span>
+            <span class="mod-lang-ar" id="footer-text-ar">يمكنك استخدام المعاينة المجانية لمدة ساعة مرة واحدة يومياً.</span>
           </p>
         </div>
       </div>
@@ -330,6 +353,15 @@ class PublisherAgent {
             }
         }
 
+        function startFreePreview() {
+            const placeId = '${placeId}';
+            const STORAGE_KEY_FREE = \`free_preview_used_\${placeId}\`;
+            localStorage.setItem(STORAGE_KEY_FREE, Date.now().toString());
+            document.getElementById('publisher-modal-overlay').classList.remove('show');
+            document.body.classList.remove('modal-open');
+            fetch(\`/api/track?id=\${placeId}&action=free_preview_started\`).catch(e => console.error(e));
+        }
+
         (function() {
           const placeId = '${placeId}';
           
@@ -343,29 +375,60 @@ class PublisherAgent {
           trackMetric('view');
 
           const ONE_HOUR = 60 * 60 * 1000;
+          const ONE_DAY = 24 * ONE_HOUR;
           const ONE_MINUTE = 60 * 1000;
+          
           const STORAGE_KEY = \`modal_last_shown_\${placeId}\`;
+          const STORAGE_KEY_FREE = \`free_preview_used_\${placeId}\`;
           
           let delay = ONE_MINUTE;
+          let showFreePreviewBtn = true;
+          let skipModal = false;
           
-          const lastShownStr = localStorage.getItem(STORAGE_KEY);
-          if (lastShownStr) {
-             const lastShown = parseInt(lastShownStr, 10);
-             const timeSinceLastShown = Date.now() - lastShown;
-             if (timeSinceLastShown < ONE_HOUR) {
-                delay = 0;
+          // Check if they recently used the free preview
+          const lastFreePreviewStr = localStorage.getItem(STORAGE_KEY_FREE);
+          if (lastFreePreviewStr) {
+             const timeSinceFreePreview = Date.now() - parseInt(lastFreePreviewStr, 10);
+             if (timeSinceFreePreview < ONE_HOUR) {
+                 // Currently in the 1 hour free window
+                 skipModal = true;
+             } else if (timeSinceFreePreview < ONE_DAY) {
+                 // They used it today, but the hour is up. Show modal immediately, no free preview button.
+                 delay = 0;
+                 showFreePreviewBtn = false;
              }
+             // If >= ONE_DAY, they get a fresh 1 minute initial delay and the button is available again
           }
 
-          setTimeout(() => {
-            document.body.classList.add('modal-open');
-            document.getElementById('publisher-modal-overlay').classList.add('show');
-            localStorage.setItem(STORAGE_KEY, Date.now().toString());
-
-            if (delay === ONE_MINUTE) {
-                 trackMetric('full_minute');
+          if (!skipModal) {
+            // Check standard modal shown logic if they haven't used free preview recently
+            if (delay !== 0) { 
+                const lastShownStr = localStorage.getItem(STORAGE_KEY);
+                if (lastShownStr) {
+                    const timeSinceLastShown = Date.now() - parseInt(lastShownStr, 10);
+                    if (timeSinceLastShown < ONE_HOUR) {
+                        delay = 0; 
+                    }
+                }
             }
-          }, delay);
+
+            setTimeout(() => {
+                document.body.classList.add('modal-open');
+                document.getElementById('publisher-modal-overlay').classList.add('show');
+                localStorage.setItem(STORAGE_KEY, Date.now().toString());
+                
+                if (!showFreePreviewBtn) {
+                    document.getElementById('free-preview-btn').style.display = 'none';
+                    // Update footer text to inform them daily limit reached
+                    document.getElementById('footer-text-en').innerText = 'You have used your free preview for today.';
+                    document.getElementById('footer-text-ar').innerText = 'لقد استخدمت المعاينة المجانية لليوم.';
+                }
+
+                if (delay === ONE_MINUTE) {
+                     trackMetric('full_minute');
+                }
+            }, delay);
+          }
         })();
       </script>
     `;
