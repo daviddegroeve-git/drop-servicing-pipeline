@@ -4,7 +4,7 @@ const axios = require('axios');
 const qrImage = require('qr-image');
 const { downloadSession, uploadSession } = require('./supabaseStorage');
 const path = require('path');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
 app.use(express.json());
@@ -316,22 +316,13 @@ async function startWhatsApp() {
             console.log(`[WhatsApp] Fetching media from URL: ${mediaUrl}`);
             const media = await MessageMedia.fromUrl(mediaUrl);
 
-            // Robust number formatting
-            let finalId = null;
-            if (to.includes('@c.us') || to.includes('@lid')) {
-                finalId = to;
-                console.log(`[WhatsApp] Using direct ID: ${finalId}`);
-            } else {
+            // 1. Resolve Number ID
+            let finalId = to;
+            if (!to.includes('@')) {
                 let cleaned = to.replace(/\D/g, '');
-                if (cleaned.startsWith('05') && cleaned.length === 10) {
-                    cleaned = '966' + cleaned.substring(1);
-                } else if (cleaned.length === 9 && cleaned.startsWith('5')) {
-                    cleaned = '966' + cleaned;
-                }
-
-                console.log(`[WhatsApp] Resolving & Warming: ${cleaned}`);
-
-                // Step 1: Resolve Number ID
+                if (cleaned.startsWith('05') && cleaned.length === 10) cleaned = '966' + cleaned.substring(1);
+                else if (cleaned.length === 9 && cleaned.startsWith('5')) cleaned = '966' + cleaned;
+                
                 const resolved = await client.getNumberId(cleaned);
                 if (!resolved) {
                     console.warn(`[WhatsApp] Number ${cleaned} is not on WhatsApp. Skipping.`);
@@ -340,29 +331,33 @@ async function startWhatsApp() {
                 finalId = resolved._serialized;
             }
 
-            // Step 2: Warm up Contact and Chat state (Crucial for "No LID" error)
-            try {
-                await client.getContactById(finalId);
-                await client.getChatById(finalId);
-            } catch (warmErr) {
-                console.warn(`[WhatsApp] Warming skipped for ${finalId}: ${warmErr.message}`);
+            console.log(`[WhatsApp] Sending Media to: ${finalId} (Attempting resilient flow)`);
+
+            // 2. Resilient Send Loop
+            let lastError = null;
+            for (let attempt = 1; attempt <= 2; attempt++) {
+                try {
+                    // Force contact fetch to populate browser-side cache (Fixes "No LID")
+                    await client.getContactById(finalId).catch(() => null);
+                    await new Promise(r => setTimeout(r, 1000)); // Sync delay
+
+                    await client.sendMessage(finalId, media, { caption: caption });
+                    console.log(`[WhatsApp] Media sent successfully on attempt ${attempt} to ${finalId}`);
+                    return res.json({ success: true, message: 'Media sent!' });
+                } catch (err) {
+                    lastError = err;
+                    console.warn(`[WhatsApp] Media send attempt ${attempt} failed: ${err.message}`);
+                    await new Promise(r => setTimeout(r, 2000));
+                }
             }
 
-            // Step 3: Send Media
-            await client.sendMessage(finalId, media, { caption: caption });
-            console.log(`[WhatsApp] Media sent successfully to ${finalId}`);
-            res.json({ success: true, message: 'Media sent!' });
+            throw lastError;
         } catch (error) {
-            console.error('[WhatsApp] Media send error:', error);
-
-            // Detailed internal log
-            console.log(`[WhatsApp] Diagnostic: to=${to}, mediaUrl=${mediaUrl}, isReady=${isReady}`);
-
+            console.error('[WhatsApp] Media send ultimate failure:', error);
             res.status(500).json({
-                error: 'Failed to send media',
+                error: 'Failed to send media after retries',
                 details: error.message,
-                isReady: isReady,
-                hasPupPage: !!(client && client.pupPage)
+                isReady: isReady
             });
         }
     });
@@ -378,54 +373,50 @@ async function startWhatsApp() {
         }
 
         try {
-            // Robust number formatting
-            let finalId = null;
-            if (to.includes('@c.us') || to.includes('@lid')) {
-                finalId = to;
-                console.log(`[WhatsApp] Using direct ID: ${finalId}`);
-            } else {
+            // 1. Resolve Number ID
+            let finalId = to;
+            if (!to.includes('@')) {
                 let cleaned = to.replace(/\D/g, '');
-                if (cleaned.startsWith('05') && cleaned.length === 10) {
-                    cleaned = '966' + cleaned.substring(1);
-                } else if (cleaned.length === 9 && cleaned.startsWith('5')) {
-                    cleaned = '966' + cleaned;
-                }
+                if (cleaned.startsWith('05') && cleaned.length === 10) cleaned = '966' + cleaned.substring(1);
+                else if (cleaned.length === 9 && cleaned.startsWith('5')) cleaned = '966' + cleaned;
 
-                console.log(`[WhatsApp] Resolving & Warming: ${cleaned}`);
-
-                // Step 1: Resolve Number ID
                 const resolved = await client.getNumberId(cleaned);
                 if (!resolved) {
                     console.warn(`[WhatsApp] Number ${cleaned} is not on WhatsApp. Skipping.`);
                     return res.status(404).json({ error: 'Number not on WhatsApp' });
                 }
-
                 finalId = resolved._serialized;
             }
 
-            // Step 2: Warm up Contact and Chat state
-            try {
-                await client.getContactById(finalId);
-                await client.getChatById(finalId);
-            } catch (warmErr) {
-                console.warn(`[WhatsApp] Warming skipped for ${finalId}: ${warmErr.message}`);
+            console.log(`[WhatsApp] Sending Text to: ${finalId} (Attempting resilient flow)`);
+
+            // 2. Resilient Send Loop
+            let lastError = null;
+            for (let attempt = 1; attempt <= 2; attempt++) {
+                try {
+                    // Force contact fetch to populate browser-side cache (Fixes "No LID")
+                    // If this fails, we still try the send
+                    await client.getContactById(finalId).catch(() => null);
+                    await new Promise(r => setTimeout(r, 1000)); // Sync delay
+
+                    // Sending via client is usually more robust than chat object
+                    await client.sendMessage(finalId, message);
+                    console.log(`[WhatsApp] Message sent successfully on attempt ${attempt} to ${finalId}`);
+                    return res.json({ success: true, message: 'Message sent!' });
+                } catch (err) {
+                    lastError = err;
+                    console.warn(`[WhatsApp] Send attempt ${attempt} failed: ${err.message}`);
+                    await new Promise(r => setTimeout(r, 2000));
+                }
             }
 
-            // Step 3: Send Message
-            await client.sendMessage(finalId, message);
-            console.log(`[WhatsApp] Message sent successfully to ${finalId}`);
-            res.json({ success: true, message: 'Message sent!' });
+            throw lastError;
         } catch (error) {
-            console.error('[WhatsApp] Send error:', error);
-
-            // Detailed internal log
-            console.log(`[WhatsApp] Diagnostic: to=${to}, messageSnippet=${message.substring(0, 50)}, isReady=${isReady}`);
-
+            console.error('[WhatsApp] Send ultimate failure:', error);
             res.status(500).json({
-                error: 'Failed to send message',
+                error: 'Failed to send message after retries',
                 details: error.message,
-                isReady: isReady,
-                hasPupPage: !!(client && client.pupPage)
+                isReady: isReady
             });
         }
     });

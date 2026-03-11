@@ -21,7 +21,9 @@ async function simulateTest() {
         
         console.log('[Test] Simulation complete. Check your logs or Supabase for a new entry for 966000000000.');
     } catch (error) {
-        console.error('[Test] Simulation failed:', error.message);
+        console.error('[Test] Simulation failed!');
+        console.error('Error Message:', error.message);
+        if (error.stack) console.error('Stack Trace:', error.stack);
     }
 }
 
