@@ -26,21 +26,50 @@ class RetoucherAgent {
     async retouchWebsite(rawHtml, business, photos = []) {
         console.log(`[Retoucher] Auditing website for: ${business.name} with ${photos.length} real photos...`);
 
+        // PHASE 1: Programmatic Purge (Deterministic)
+        // LLMs struggle with exact string replacement of 800-character URLs. We do it via Regex first.
+        let cleanedHtml = rawHtml;
+        
+        const premiumTechImages = [
+            "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?q=80&w=1000&auto=format&fit=crop", // Repair bench
+            "https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=1000&auto=format&fit=crop", // Circuit board
+            "https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?q=80&w=1000&auto=format&fit=crop", // Micro soldering
+            "https://images.unsplash.com/photo-1588508065123-287b28e013da?q=80&w=1000&auto=format&fit=crop", // Screen repair
+            "https://images.unsplash.com/photo-1555664424-778a1e5e1b48?q=80&w=1000&auto=format&fit=crop", // Tech tools
+            "https://images.unsplash.com/photo-1629131726692-1accd0c53ce0?q=80&w=1000&auto=format&fit=crop", // Motherboard
+            "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1000&auto=format&fit=crop", // Phone repair person
+            "https://images.unsplash.com/photo-1574824874457-3fb2d887be17?q=80&w=1000&auto=format&fit=crop", // Broken screen
+            "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?q=80&w=1000&auto=format&fit=crop", // Electronics flatlay
+            "https://images.unsplash.com/photo-1585247226801-bc613c441316?q=80&w=1000&auto=format&fit=crop"  // Mobile repair
+        ];
+
+        let imgIndex = 0;
+        const getNextImage = () => premiumTechImages[imgIndex++ % premiumTechImages.length];
+
+        // 1. Purge all Google Maps photos (they render as Red X due to billing)
+        cleanedHtml = cleanedHtml.replace(/https:\/\/maps\.googleapis\.com\/maps\/api\/place\/photo\?[^"'\s)]+/g, () => getNextImage());
+        
+        // 2. Purge all loremflickr placeholders (often fetch irrelevant cats/statues)
+        cleanedHtml = cleanedHtml.replace(/https:\/\/loremflickr\.com\/[^"'\s)]+/g, () => getNextImage());
+
+        // 3. Purge all existing Unsplash images to guarantee a completely fresh, unbroken, and unique set.
+        // This solves the missing hero image bug and the duplicate image bugs.
+        cleanedHtml = cleanedHtml.replace(/https:\/\/images\.unsplash\.com\/photo-[^"'\s)]+/g, () => getNextImage());
+
+        // PHASE 2: AI Aesthetic Polish
         const systemPrompt = `You are a world-class UI/UX Designer and Visual Context Specialist.
-Your job is to audit HTML/Tailwind code to ensure high aesthetic quality and industry-specific relevance.
+Your job is to audit HTML/Tailwind code to ensure high aesthetic quality and premium feel.
 
 ASSET RULES:
-1. **Prioritize Real Photos**: You are provided with a list of real photos from the business's Google Maps profile. USE THESE URLs to replace generic <img> src attributes or background-images.
-2. **Contextual Alignment**: If the website is about "Smartphone Maintenance", do NOT show generic office buildings. Use images of repair tools, microsoldering, or technicians working on devices.
-3. **Remove Broken Maps/Watermarks**: Replace any Google Maps iframe showing watermarks or missing API errors with a beautiful industry-relevant hero image.
-4. **No Duplicate Media**: If the same image URL is used twice, replace the second one with a different photo from the provided list or a random relevant one from loremflickr.
-5. **Premium UI**: Replace basic Tailwind classes (bg-white) with premium variations (backdrop-blur-md, bg-white/80, sleek gradients).
+1. **Premium glassmorphism**: Use 'backdrop-blur-lg' and 'bg-white/70' for container cards to make the text pop against backgrounds. Add 'shadow-xl' to main elements.
+2. **Text Readability**: Ensure headings over hero images have strong 'drop-shadow-xl' or text-shadow so they don't blend in.
+3. **No Duplicate Media**: Each section must have a unique, relevant image.
+4. **Layout**: Ensure grid layouts use 'gap-8' and cards have 'rounded-xl'.
+5. **Hero Image**: Ensure the hero section has a valid, high-quality background image URL.
+6. **Navigation & Overlap**: To prevent the top-right language switcher from overlapping the main navigation links, simply inject 'pr-24' or similar padding to the right side of the main header's '<nav>' element. DO NOT attempt to move or duplicate the language switcher DOM elements.
 
 BUSINESS CONTEXT:
 ${business.name} operates in: ${(business.types || []).join(', ')}.
-
-REAL PHOTO ASSETS (PRIORITIZE THESE):
-${photos.map(p => `- ${p}`).join('\n')}
 
 OUTPUT FORMAT:
 Return ONLY a valid JSON array of edits. No markdown.
@@ -50,7 +79,7 @@ Return ONLY a valid JSON array of edits. No markdown.
 
         const userPrompt = `
 HTML to Audit:
-${rawHtml.substring(0, 15000)}
+${cleanedHtml.substring(0, 15000)}
 `;
 
         try {
@@ -83,7 +112,7 @@ ${rawHtml.substring(0, 15000)}
 
             console.log(`[Retoucher] Applying ${edits.length} aesthetic enhancements...`);
 
-            let finalHtml = rawHtml;
+            let finalHtml = cleanedHtml;
             for (const edit of edits) {
                 if (edit.old && edit.new) {
                     // Using split/join for global replace of exact strings safely
@@ -94,7 +123,7 @@ ${rawHtml.substring(0, 15000)}
             return finalHtml;
         } catch (error) {
             console.error(`[Retoucher] Audit failed: ${error.message}`);
-            return rawHtml; 
+            return cleanedHtml; // Return at least the regex-cleaned version
         }
     }
 }
