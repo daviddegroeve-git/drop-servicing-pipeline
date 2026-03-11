@@ -64,16 +64,32 @@ class Orchestrator {
         // Prioritize already-pitched leads (who have a website) to use the 1 week free trial
         await this.runPromotionCycle();
         await this.runWarmingCycle();
+        await this.runNudgeCycle();
       }
 
       // Step 2: Process intermediate leads (backlog)
       let activeDbLead = await this.db.getPendingLead();
 
       while (activeDbLead) {
-        // If in promotion mode, we SKIP leads that are just 'scouted' to avoid auto-generation costs.
-        if (promotionMode && activeDbLead.status === 'scouted') {
-          console.log(`[Orchestrator] Skipping auto-generation for ${activeDbLead.name} (Waiting for Warming)`);
-          break; // Exit queue processing for this cycle to save costs
+        // If in promotion mode, we ONLY auto-generate for leads that confirmed interest.
+        // This is our 'Cost Shield' - we don't build sites unless they say YES.
+        if (promotionMode && (activeDbLead.status === 'scouted' || activeDbLead.status === 'warming_sent')) {
+          console.log(`[Orchestrator] Skipping auto-generation for ${activeDbLead.name} (Waiting for confirmed interest)`);
+          
+          // Try to find an "Interest Confirmed" lead instead to jump the queue
+          const { data: priorityLead } = await this.db.supabase
+            .from('leads')
+            .select('*')
+            .in('status', ['interest_confirmed', 'scouted', 'warming_sent', 'warmed', 'created', 'retouched', 'published'])
+            .limit(1)
+            .single();
+            
+          if (priorityLead) {
+            console.log(`[Orchestrator] Jumped Queue: Processing Interest Confirmed lead ${priorityLead.name}`);
+            activeDbLead = priorityLead;
+          } else {
+            break; // Exit queue processing for this cycle
+          }
         }
 
         const elapsedSeconds = (Date.now() - startTime) / 1000;
@@ -91,6 +107,15 @@ class Orchestrator {
         console.log(`\n[Orchestrator] Selected lead: ${activeLead.name}`);
 
         try {
+          // Pre-check phone validity to avoid wasting resources
+          const formattedPhone = this.closer.formatPhoneNumber(activeLead.phone);
+          if (!formattedPhone) {
+            console.log(`[Orchestrator] Skipping ${activeLead.name}: Invalid or landline number.`);
+            await this.db.updateLeadStatus(activeLead.placeId, 'invalid', { last_error: 'Invalid or landline number' });
+            activeDbLead = await this.db.getPendingLead();
+            continue;
+          }
+
           if (activeDbLead.status !== 'pitched') {
             const health = await this.axios.get('http://localhost:8081/health');
             if (!health.data.ready) throw new Error('WhatsApp not ready');
@@ -160,10 +185,13 @@ class Orchestrator {
     const leads = await this.db.getScoutedLeads(30);
     for (const lead of leads) {
       try {
-        const success = await this.closer.warmLead(lead.name, lead.phone);
-        if (success) {
+        const result = await this.closer.warmLead(lead.name, lead.phone);
+        if (result === 'local_sent' || result === true) {
           await this.db.addLog('closer', 'warming_sent', lead.place_id, { name: lead.name }, 'success');
-          await this.db.updateLeadStatus(lead.place_id, 'warmed');
+          await this.db.updateLeadStatus(lead.place_id, 'warming_sent');
+        } else if (result === 'skipped_invalid') {
+          console.log(`[Orchestrator] Marking ${lead.name} as invalid (landline).`);
+          await this.db.updateLeadStatus(lead.place_id, 'invalid', { last_error: 'Landline detected during warming' });
         }
         await new Promise(r => setTimeout(r, 8000));
       } catch (e) {
@@ -188,13 +216,47 @@ class Orchestrator {
     const leads = await this.db.getPitchedLeads(30);
     for (const lead of leads) {
       try {
-        const success = await this.closer.sendPromotion(lead.name, lead.phone, lead.vercel_url);
-        if (success) {
+        const result = await this.closer.sendPromotion(lead.name, lead.phone, lead.vercel_url);
+        if (result === 'local_sent' || result === true) {
           await this.db.addLog('closer', 'promo_sent', lead.place_id, { name: lead.name }, 'success');
+        } else if (result === 'skipped_invalid') {
+          console.log(`[Orchestrator] Marking ${lead.name} as invalid (landline) during promo.`);
+          await this.db.updateLeadStatus(lead.place_id, 'invalid', { last_error: 'Landline detected during promotion' });
         }
         await new Promise(r => setTimeout(r, 8000));
       } catch (e) {
         console.error(`[Orchestrator] Promo failed for ${lead.name}:`, e.message);
+      }
+    }
+  }
+
+  async runNudgeCycle() {
+    console.log('[Orchestrator] Running Nudge Cycle (Follow-ups)...');
+    try {
+      const health = await this.axios.get(`${this.closer.baseURL}/health`);
+      if (!health.data.ready) return;
+    } catch (e) { return; }
+
+    // Follow up with leads pitched > 48h ago who haven't responded
+    const twoDaysAgo = new Date(Date.now() - (48 * 60 * 60 * 1000)).toISOString();
+    const { data: leads } = await this.db.supabase
+      .from('leads')
+      .select('*')
+      .eq('status', 'pitched')
+      .lt('updated_at', twoDaysAgo)
+      .limit(10);
+
+    if (!leads) return;
+
+    for (const lead of leads) {
+      try {
+        const message = `Hi ${lead.name}! 💎 Just checking in—did you have a chance to look at your new website preview? {previewUrl}\n\nYour 1-week FREE trial is running! Let me know if you have any questions.`.replace('{previewUrl}', lead.vercel_url);
+        await this.closer.sendMessage(lead.phone, message);
+        await this.db.saveOutboundChatLog(lead.place_id, lead.phone, message);
+        await this.db.updateLeadStatus(lead.place_id, 'pitched', { updated_at: new Date().toISOString() }); // Reset timer
+        await new Promise(r => setTimeout(r, 8000));
+      } catch (e) {
+        console.error(`[Orchestrator] Nudge failed for ${lead.name}:`, e.message);
       }
     }
   }

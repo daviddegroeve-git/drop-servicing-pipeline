@@ -22,10 +22,11 @@ class ChatbotAgent {
         const prompt = `
         Analyze the following WhatsApp message from a local business and classify it into EXACTLY one of these categories:
         1. BUSINESS_AUTO_REPLY: Detailed business info, mission statements, "how can we help you", or "we are unavailable" messages that look like automatic responders.
-        2. USER_QUESTION: A real person asking a specific question about price, features, or the website link.
-        3. USER_GREETING: Just saying hi, hello, or sending emojis like 🙏 or 👍.
-        4. USER_NEGATIVE: Stop, don't message me, annoy, block, etc.
-        5. OTHER: Anything else.
+        2. USER_INTERESTED: Positive responses like "YES", "I am interested", "show me", "نعم", "مهتم", "ارسل", or any variation expressing interest in the free trial or preview.
+        3. USER_QUESTION: A real person asking a specific question about price, features, or the website link.
+        4. USER_GREETING: Just saying hi, hello, or sending emojis like 🙏 or 👍.
+        5. USER_NEGATIVE: Stop, don't message me, annoy, block, etc.
+        6. OTHER: Anything else.
 
         Message: "${messageText}"
 
@@ -60,7 +61,30 @@ class ChatbotAgent {
                 return;
             }
 
-            // 3. For real user interactions, generate a contextual response
+            // 3. Handle Explicit Interest (Automated Trial Activation)
+            if (intent === 'USER_INTERESTED' && (lead.status === 'scouted' || lead.status === 'warming_sent')) {
+                console.log(`[Chatbot] Interest Confirmed for ${lead.name}. Activating Trial...`);
+                await db.updateLeadStatus(lead.place_id, 'interest_confirmed', { 
+                    updated_at: new Date().toISOString() 
+                });
+                
+                const activationMsg = `Great choice, ${lead.name}! 💎 Your 1-week FREE trial is now being activated. 
+
+We are finalizing your custom AI-powered website now. You will receive a link to your preview within the next 15-20 minutes!
+
+---
+
+خيار رائع، ${lead.name}! 💎 تجربة الأسبوع المجاني الخاصة بك قيد التفعيل الآن.
+
+نحن نضع اللمسات الأخيرة على موقعك المخصص المدعوم بالذكاء الاصطناعي الآن. ستصلك رسالة تحتوي على رابط المعاينة خلال 15-20 دقيقة القادمة!`;
+
+                const closer = new CloserAgent();
+                await closer.sendMessage(incomingPhone, activationMsg);
+                await db.saveOutboundChatLog(lead.place_id, incomingPhone, activationMsg);
+                return; // Stop here, the Orchestrator will pick it up
+            }
+
+            // 4. For real user interactions, generate a contextual response
             const trainingLogs = await db.getTrainingLogs();
 
             let trainingContext = "Here are past examples of how you answered questions from leads. Mimic this style and factual information:\n";

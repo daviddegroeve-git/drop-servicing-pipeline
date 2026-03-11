@@ -25,6 +25,12 @@ class CloserAgent {
      */
     formatPhoneNumber(rawPhone) {
         if (!rawPhone) return null;
+
+        // If it's already a full WhatsApp ID (e.g. 966...@c.us or ...@lid), return as-is
+        if (rawPhone.includes('@c.us') || rawPhone.includes('@lid')) {
+            return rawPhone;
+        }
+
         let cleaned = rawPhone.replace(/\D/g, '');
 
         // If it starts with 05 and is 10 digits, it's a local KSA mobile number
@@ -122,7 +128,7 @@ class CloserAgent {
      */
     async warmLead(businessName, phone) {
         const formattedPhone = this.formatPhoneNumber(phone);
-        if (!formattedPhone) return false;
+        if (!formattedPhone) return 'skipped_invalid';
         const message = `Hello ${businessName}! 💎 We are ALATLAS Intelligence. We're currently designing a premium AI-powered website for businesses in your area. 
 
 Would you like to see a custom preview for your business completely for free? Just reply 'YES' and we'll send it over!
@@ -153,7 +159,7 @@ Would you like to see a custom preview for your business completely for free? Ju
      */
     async sendPromotion(businessName, phone, vercelUrl) {
         const formattedPhone = this.formatPhoneNumber(phone);
-        if (!formattedPhone) return false;
+        if (!formattedPhone) return 'skipped_invalid';
         const promoImageUrl = 'https://drop-servicing-pipeline.vercel.app/marketing/promo_19sar.png';
         const portalUrl = 'https://drop-servicing-pipeline.vercel.app/client-dashboard';
 

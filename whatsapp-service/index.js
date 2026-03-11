@@ -274,23 +274,28 @@ async function startWhatsApp() {
             const media = await MessageMedia.fromUrl(mediaUrl);
 
             // Robust number formatting
-            let cleaned = to.replace(/\D/g, '');
-            if (cleaned.startsWith('05') && cleaned.length === 10) {
-                cleaned = '966' + cleaned.substring(1);
-            } else if (cleaned.length === 9 && cleaned.startsWith('5')) {
-                cleaned = '966' + cleaned;
+            let finalId = null;
+            if (to.includes('@c.us') || to.includes('@lid')) {
+                finalId = to;
+                console.log(`[WhatsApp] Using direct ID: ${finalId}`);
+            } else {
+                let cleaned = to.replace(/\D/g, '');
+                if (cleaned.startsWith('05') && cleaned.length === 10) {
+                    cleaned = '966' + cleaned.substring(1);
+                } else if (cleaned.length === 9 && cleaned.startsWith('5')) {
+                    cleaned = '966' + cleaned;
+                }
+
+                console.log(`[WhatsApp] Resolving & Warming: ${cleaned}`);
+
+                // Step 1: Resolve Number ID
+                const resolved = await client.getNumberId(cleaned);
+                if (!resolved) {
+                    console.warn(`[WhatsApp] Number ${cleaned} is not on WhatsApp. Skipping.`);
+                    return res.status(404).json({ error: 'Number not on WhatsApp' });
+                }
+                finalId = resolved._serialized;
             }
-
-            console.log(`[WhatsApp] Resolving & Warming: ${cleaned}`);
-
-            // Step 1: Resolve Number ID
-            const resolved = await client.getNumberId(cleaned);
-            if (!resolved) {
-                console.warn(`[WhatsApp] Number ${cleaned} is not on WhatsApp. Skipping.`);
-                return res.status(404).json({ error: 'Number not on WhatsApp' });
-            }
-
-            const finalId = resolved._serialized;
 
             // Step 2: Warm up Contact and Chat state (Crucial for "No LID" error)
             try {
@@ -331,23 +336,29 @@ async function startWhatsApp() {
 
         try {
             // Robust number formatting
-            let cleaned = to.replace(/\D/g, '');
-            if (cleaned.startsWith('05') && cleaned.length === 10) {
-                cleaned = '966' + cleaned.substring(1);
-            } else if (cleaned.length === 9 && cleaned.startsWith('5')) {
-                cleaned = '966' + cleaned;
+            let finalId = null;
+            if (to.includes('@c.us') || to.includes('@lid')) {
+                finalId = to;
+                console.log(`[WhatsApp] Using direct ID: ${finalId}`);
+            } else {
+                let cleaned = to.replace(/\D/g, '');
+                if (cleaned.startsWith('05') && cleaned.length === 10) {
+                    cleaned = '966' + cleaned.substring(1);
+                } else if (cleaned.length === 9 && cleaned.startsWith('5')) {
+                    cleaned = '966' + cleaned;
+                }
+
+                console.log(`[WhatsApp] Resolving & Warming: ${cleaned}`);
+
+                // Step 1: Resolve Number ID
+                const resolved = await client.getNumberId(cleaned);
+                if (!resolved) {
+                    console.warn(`[WhatsApp] Number ${cleaned} is not on WhatsApp. Skipping.`);
+                    return res.status(404).json({ error: 'Number not on WhatsApp' });
+                }
+
+                finalId = resolved._serialized;
             }
-
-            console.log(`[WhatsApp] Resolving & Warming: ${cleaned}`);
-
-            // Step 1: Resolve Number ID
-            const resolved = await client.getNumberId(cleaned);
-            if (!resolved) {
-                console.warn(`[WhatsApp] Number ${cleaned} is not on WhatsApp. Skipping.`);
-                return res.status(404).json({ error: 'Number not on WhatsApp' });
-            }
-
-            const finalId = resolved._serialized;
 
             // Step 2: Warm up Contact and Chat state
             try {
